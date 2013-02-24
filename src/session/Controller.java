@@ -43,7 +43,7 @@ public class Controller extends HttpServlet {
 
 		// Get Client IP & Message From The Text Box & Create a sesison object
 		try{
-			out.println(request.getAttribute("message"));
+			out.println(request.getParameter("message"));
 			Session user = new Session("message",
 					request.getRemoteAddr());
 		
