@@ -39,6 +39,7 @@ public class Controller extends HttpServlet {
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
+		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 
 		// Get Client IP & Message From The Text Box & Create a sesison object
@@ -75,6 +76,26 @@ public class Controller extends HttpServlet {
 		}catch (NullPointerException e) {
 			e.printStackTrace();
 		}
+		
+		
+		//HTML Form
+		out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
+	    out.println("<html><head></head><body>");
+	    out.println("<form action=\"Controller\" method=\"post\">");
+	    out.println("<input type=\"hidden\" name=\"action\" value=\"docomplete\" />");
+	    out.println("<input type=\"submit\" name=\"command\" value=\"Replace\" />");
+		out.println("<input type=\"text\" name=\"message\" value=\"Please enter a value...\" />");
+		out.println("<br /><br />");
+		out.println("<input type=\"submit\" name=\"command\" value=\"Refresh\" />");
+		out.println("<br /><br />");
+		out.println("<input type=\"submit\" name=\"command\" value=\"Log Out!\" />");
+		out.println("<br /><br />");
+		out.println("</form>");
+		out.println("<p>Session on: </p>");
+		out.println("<p>Expires: </p>");
+		out.println("</body></html>");
+		
+		
 
 	}
 

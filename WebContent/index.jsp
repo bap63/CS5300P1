@@ -9,21 +9,21 @@
 <body>
 
 	<!-- Start Form -->
-	<form action="Controller" method="get">
+	<form action="Controller" method="post">
 	
 		<input type="hidden" name="action" value="docomplete" />
 		
-		<input type="submit" name="btnReplace" value="Replace" />
+		<input type="submit" name="command" value="Replace" />
 		<input type="text" name="message" value="Please enter a value..." />
 		<br /><br />
-		<input type="submit" name="btnRefresh" value="Refresh" />
+		<input type="submit" name="command" value="Refresh" />
 		<br /><br />
-		<input type="submit" name="btnLogout" value="Log Out!" />
+		<input type="submit" name="command" value="Log Out!" />
 		<br /><br />
 	</form>
 	<!-- End Form -->
 
-<p>Session on </p>
+<p>Session on <%= request.getLocalAddr().toString() %></p>
 <p>Expires: </p>
 
 </body>
