@@ -46,7 +46,7 @@ public class Controller extends HttpServlet {
 		
 			String message = (String)request.getParameter("message");
 
-			String action = request.getParameter("command");
+			String action = (String)request.getParameter("command");
 		    //out.println(action);
 			
 			if (message == null) {
@@ -54,7 +54,7 @@ public class Controller extends HttpServlet {
 			}
 			
 			
-			Session user = new Session("message",
+			Session user = new Session(message,
 					request.getRemoteAddr());
 		
 			
@@ -88,15 +88,18 @@ public class Controller extends HttpServlet {
 		    //String action = request.getParameter("command");
 		    out.println(action);
 		    if (action != null) {
-		      if (action == "Replace") {
+		      if (action.equals("Replace")) {
 		        message = request.getParameter("message");
-		      } else if (action == "Logout") {
+		      } else if (action.equals("Logout")) {
 		    	out.println("TESTS");
 		    	response.setContentType("text/html");
 		    	out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
 		  	    out.println("<html><head></head><body>");
 		        out.println("<h1>Thanks For Visiting!</h1>");
 		        out.println("</body></html>");
+		        return;
+		      } else if (action.equals("Refresh")) {
+		    	  out.println("refreshing");
 		      }else{
 		    	  out.println("TEST IN ELSE");
 		      }

@@ -7,7 +7,7 @@ import java.util.concurrent.*;
 public class Session {
 	private String sessionID;
 	private Integer versionNumber;
-	private Timestamp expires;
+	private Timestamp expires = new Timestamp(0);
 	private ConcurrentHashMap<String, String[]> sessionTable = new ConcurrentHashMap<String, String[]>();
 	
 	public Session(String data, String clientIP){
