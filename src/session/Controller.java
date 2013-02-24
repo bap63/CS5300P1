@@ -42,9 +42,18 @@ public class Controller extends HttpServlet {
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 
-		// Get Client IP & Message From The Text Box & Create a sesison object
-		try{
-			out.println(request.getParameter("message"));
+		// Get Client IP & Message From The Text Box & Create a session object
+		
+			String message = (String)request.getParameter("message");
+
+			String action = request.getParameter("command");
+		    //out.println(action);
+			
+			if (message == null) {
+			      message = "Welcome To Our Site ;)!";
+			}
+			
+			
 			Session user = new Session("message",
 					request.getRemoteAddr());
 		
@@ -52,6 +61,8 @@ public class Controller extends HttpServlet {
 			String localSessionID = user.getSessionID();
 			localSessionID = localSessionID + "|" + user.getVersionNumber() + "|"
 					+ request.getLocalAddr().toString();
+			
+			out.println(localSessionID);
 
 			// Cookie Time!
 			Cookie[] cookies = request.getCookies();
@@ -73,29 +84,41 @@ public class Controller extends HttpServlet {
 				}
 			}
 			
-		}catch (NullPointerException e) {
-			e.printStackTrace();
-		}
-		
+			// Responding to button presses
+		    //String action = request.getParameter("command");
+		    out.println(action);
+		    if (action != null) {
+		      if (action == "Replace") {
+		        message = request.getParameter("message");
+		      } else if (action == "Logout") {
+		    	out.println("TESTS");
+		    	response.setContentType("text/html");
+		    	out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
+		  	    out.println("<html><head></head><body>");
+		        out.println("<h1>Thanks For Visiting!</h1>");
+		        out.println("</body></html>");
+		      }else{
+		    	  out.println("TEST IN ELSE");
+		      }
+		    }
 		
 		//HTML Form
 		out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
 	    out.println("<html><head></head><body>");
-	    out.println("<form action=\"Controller\" method=\"post\">");
-	    out.println("<input type=\"hidden\" name=\"action\" value=\"docomplete\" />");
+	    out.println("<h1>" + message + "</h1>");
+	    out.println("<form action=\"Controller\" method=\"get\">");
+	    //out.println("<input type=\"hidden\" name=\"action\" value=\"docomplete\" />");
 	    out.println("<input type=\"submit\" name=\"command\" value=\"Replace\" />");
-		out.println("<input type=\"text\" name=\"message\" value=\"Please enter a value...\" />");
+		out.println("<input type=\"text\" name=\"message\" />");
 		out.println("<br /><br />");
 		out.println("<input type=\"submit\" name=\"command\" value=\"Refresh\" />");
 		out.println("<br /><br />");
-		out.println("<input type=\"submit\" name=\"command\" value=\"Log Out!\" />");
+		out.println("<input type=\"submit\" name=\"command\" value=\"Logout\" />");
 		out.println("<br /><br />");
 		out.println("</form>");
 		out.println("<p>Session on: </p>");
 		out.println("<p>Expires: </p>");
 		out.println("</body></html>");
-		
-		
 
 	}
 
