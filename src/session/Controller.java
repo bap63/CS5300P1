@@ -36,62 +36,48 @@ public class Controller extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
-	protected void doGet(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 
-		// Get Client IP & Message From The Text Box & Create a session object
-		String message = (String) request.getParameter("message");
+		//Get action user is trying to execute
 		String action = (String) request.getParameter("command");
-		// out.println(action);
+		Session user = new Session();
+		String localSessionID = "";
 
-		if (message == null) {
-			message = "Welcome To Our Site ;)!";
-		}
-
-		Session user = new Session(message, request.getRemoteAddr());
-
-		String localSessionID = user.getSessionID();
-		localSessionID = localSessionID + "|" + user.getVersionNumber() + "|"
-				+ request.getLocalAddr().toString();
-
-		//out.println(localSessionID);
-
-		// Cookie Time!
 		Cookie[] cookies = request.getCookies();
-
 		if (cookies == null) {
-			out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
-			out.println("<html><head></head><body>");
-			out.println("<h3>No Cookies Found :(</h3>");
-			
-			//out.println("No Cookies Found<br />");
-			// Make A New Cookie
-			Cookie cookie = new Cookie("CS5300PROJ1SESSION", localSessionID);
+			//Creates a new cookie
+			user.getSession("Default Data",request.getRemoteAddr());
+			localSessionID = user.getSessionID();
+			String cookieData = localSessionID + "#" + user.getVersionNumber() 
+			+ "#" + request.getLocalAddr().toString();
+			Cookie cookie = new Cookie("CS5300PROJ1SESSION", cookieData);
 			cookie.setMaxAge(615);
 			response.addCookie(cookie);
+			out.println("Welcome! A new session has been created.");
 		} else {
-			//This is just a test - not needed.
+			// Read existing cookie
 			for (Cookie retrievedCookie : cookies) {
 				String name = retrievedCookie.getName();
 				String value = retrievedCookie.getValue();
 
 				if (name.equals("CS5300PROJ1SESSION")) {
-					message = user.readData();
-					//out.println("<h1>" + name + " : " + value + "</h1><br />");
+					out.println("Welcome back, Session ID is ");
+					localSessionID = value.split("#")[0];
+					out.println(localSessionID + "<br />");
+					user.fetchSession(localSessionID);
+					String data = user.readData();
+					out.println("Data is :" + data);
 				}
 			}
 		}
-
-		// Responding to button presses
-		// String action = request.getParameter("command");
-		//out.println(action);
-		if (action != null) {
-			if (action.equals("Replace")) {
-				message = request.getParameter("message");
-			} else if (action.equals("Logout")) {
-				// Destroy cookie by setting age to zero and reading the cookie
+		if(action != null && action != ""){
+			if(action.equals("Replace")){
+				String message = request.getParameter("message");
+				user.writeData(message);	
+			}
+			else if(action.equals("Logout")){
 				Cookie destroyCookie = null;
 				if (cookies != null) {
 					for (Cookie retrievedCookie : cookies) {
@@ -105,45 +91,16 @@ public class Controller extends HttpServlet {
 				if (destroyCookie != null) {
 					destroyCookie.setMaxAge(0);
 					response.addCookie(destroyCookie);
-					
 				}
-				
-				//Print Logout HTML
-				// out.println("TESTS");
-				response.setContentType("text/html");
-				out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
-				out.println("<html><head></head><body>");
-				out.println("<h1>Thanks For Visiting!</h1>");
-				out.println("<h3>Cookie Successfully Destroyed!</h3>");
-				out.println("</body></html>");
-				return;
-			} else {
-				out.println("Oops! An Error Occurred In The Action Button Of The Form!");
+				out.println("Session ended.");
 			}
+			else{
+				out.println("Invalid action");
+			}
+			
 		}
 
-		// HTML Form !!! REMEMBER TO CHANGE BACK TO POST !!!
-		// Also need: the expiration time for the session, the network address and port of the server
-		out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
-		out.println("<html><head></head><body>");
-		out.println("<h1>" + message + "</h1>");
-		out.println("<form action=\"Controller\" method=\"get\">");
-		// out.println("<input type=\"hidden\" name=\"action\" value=\"docomplete\" />");
-		out.println("<input type=\"submit\" name=\"command\" value=\"Replace\" />");
-		out.println("<input type=\"text\" name=\"message\" />");
-		out.println("<br /><br />");
-		out.println("<a href=''/>Refresh</a>");
-		out.println("<br /><br />");
-		out.println("<input type=\"submit\" name=\"command\" value=\"Logout\" />");
-		out.println("<br /><br />");
-		out.println("</form>");
-		out.println("<p>Session on (Local): " + request.getLocalAddr().toString() + " | Port: "
-				+ request.getLocalPort() +"</p>");
-		out.println("<p>Session on (Remote): " + request.getRemoteAddr().toString() + " | Port: "
-				+ request.getRemotePort() +"</p>");
-		out.println("<p>Expires: " + user.getExpires() + "</p>");
-		out.println("</body></html>");
-
+		
 	}
 
 	/**
