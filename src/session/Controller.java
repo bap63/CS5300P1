@@ -78,6 +78,7 @@ public class Controller extends HttpServlet {
 				String value = retrievedCookie.getValue();
 
 				if (name.equals("CS5300PROJ1SESSION")) {
+					message = user.readData();
 					//out.println("<h1>" + name + " : " + value + "</h1><br />");
 				}
 			}
@@ -116,8 +117,6 @@ public class Controller extends HttpServlet {
 				out.println("<h3>Cookie Successfully Destroyed!</h3>");
 				out.println("</body></html>");
 				return;
-			} else if (action.equals("Refresh")) {
-				out.println("Refreshing The Page");
 			} else {
 				out.println("Oops! An Error Occurred In The Action Button Of The Form!");
 			}
@@ -133,7 +132,7 @@ public class Controller extends HttpServlet {
 		out.println("<input type=\"submit\" name=\"command\" value=\"Replace\" />");
 		out.println("<input type=\"text\" name=\"message\" />");
 		out.println("<br /><br />");
-		out.println("<input type=\"submit\" name=\"command\" value=\"Refresh\" />");
+		out.println("<a href=''/>Refresh</a>");
 		out.println("<br /><br />");
 		out.println("<input type=\"submit\" name=\"command\" value=\"Logout\" />");
 		out.println("<br /><br />");

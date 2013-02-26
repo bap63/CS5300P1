@@ -47,4 +47,15 @@ public class Session {
 		String[] temp = {data, versionNumber.toString(), expires.toString()};
 		sessionTable.put(sessionID, temp);
 	}
+	
+	protected String readData(){
+		try{
+			String data = sessionTable.get(sessionID)[0];
+			return data;
+		}
+		catch(NullPointerException e){
+			return "";
+		
+		}
+	}
 }
