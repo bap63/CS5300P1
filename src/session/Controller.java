@@ -104,7 +104,7 @@ public class Controller extends HttpServlet {
 				if (destroyCookie != null) {
 					destroyCookie.setMaxAge(0);
 					response.addCookie(destroyCookie);
-					out.println("Cookie Successfully Destroyed!");
+					
 				}
 				
 				//Print Logout HTML
@@ -113,6 +113,7 @@ public class Controller extends HttpServlet {
 				out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
 				out.println("<html><head></head><body>");
 				out.println("<h1>Thanks For Visiting!</h1>");
+				out.println("<h3>Cookie Successfully Destroyed!</h3>");
 				out.println("</body></html>");
 				return;
 			} else if (action.equals("Refresh")) {
