@@ -24,6 +24,9 @@ public class Controller extends HttpServlet {
 	// Cleaner vars
 	protected static Timer cleanerTimer = new Timer();
 	protected static Cleanup cleaner = new Cleanup();
+	
+	// Constant values
+	private static String cookieName = "CS5300PROJ1SESSION";
 
 	
 	private String message = "";
@@ -60,55 +63,59 @@ public class Controller extends HttpServlet {
 		String action = (String) request.getParameter("command");
 		String localSessionID = "";
 
+		// Get any existing cookies for the site and look for ours
 		Cookie[] cookies = request.getCookies();
+		Cookie myCookie = null;
 		if (cookies == null) {
-			// Creates a new cookie
-			user.getSession("Default Data", request.getRemoteAddr());
-			localSessionID = user.getSessionID();
-			String cookieData = localSessionID + "#" + user.getVersionNumber()
-					+ "#" + request.getLocalAddr().toString();
-			Cookie cookie = new Cookie("CS5300PROJ1SESSION", cookieData);
-			cookie.setMaxAge(615);
-			response.addCookie(cookie);
+			// set the default message
+			message = "Welcome!";
 			//out.println("Welcome! A new session has been created.");
-			message = "Welcome! A new session has been created.";
+			// Creates a new cookie
+			user.getSession(message, request.getRemoteAddr());
+			String[] locations = {request.getLocalAddr().toString()};
+			String cookieData = user.createCookieData(locations);
+			localSessionID = user.getSessionID();
+			myCookie = new Cookie(cookieName, cookieData);
+			// use the session expiration time for the cookie expiration
+			myCookie.setMaxAge(user.getExpTime());
+			response.addCookie(myCookie);
 		} else {
-			// Read existing cookie
+			// Read existing cookies to look for ours
 			for (Cookie retrievedCookie : cookies) {
 				String name = retrievedCookie.getName();
 				String value = retrievedCookie.getValue();
-
-				if (name.equals("CS5300PROJ1SESSION")) {
+				// found our cookie; get the session ID from there
+				if (name.equals(cookieName)) {
+					myCookie = retrievedCookie;
 					//out.println("Welcome back, Session ID is ");
-					localSessionID = value.split("#")[0];
+					user.parseCookieData(value);
+					localSessionID = user.getSessionID();
 					//out.println(localSessionID + "<br />");
 					user.fetchSession(localSessionID);
-					//String data = user.readData();
-					//out.println("Data is :" + data);
+					// TODO: session version and exp must be incremented on every request.
+					// this should happen in both the session data and the cookie
+					
 				}
 			}
 		}
+		// if an action was passed in, execute it
 		if (action != null && action != "") {
+			// replace the current message stored in the session with the new one
 			if (action.equals("Replace")) {
 				message = request.getParameter("message");
 				user.writeData(message);
-			} else if (action.equals("Logout")) {
-				Cookie destroyCookie = null;
-				if (cookies != null) {
-					for (Cookie retrievedCookie : cookies) {
-						Cookie tempCookie = retrievedCookie;
-						if (tempCookie.getName().equals("CS5300PROJ1SESSION")) {
-							destroyCookie = tempCookie;
-						}
-					}
-				}
+			// log the user out by destroying the cookie; 
+			// session data will be removed as part of the normal session cleanup process
+			} else if (action.equals("Logout") && myCookie != null) {
 				// Set Age To Zero & 'Add' The Cookie Back To The Client For It
 				// To Expire Immediately
-				if (destroyCookie != null) {
-					destroyCookie.setMaxAge(0);
-					response.addCookie(destroyCookie);
-				}
+				myCookie.setMaxAge(0);
+				response.addCookie(myCookie);
+				message = "You have been logged out.";
 				//out.println("Session ended.");
+			// for reloads, retrieve the existing message from the session data store
+			} else if (action.equals("Reload")) {
+				message = user.readData();
 			} else {
 				//out.println("Invalid action");
 			}
@@ -120,21 +127,24 @@ public class Controller extends HttpServlet {
 		out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
 		out.println("<html><head></head><body>");
 		out.println("<h1>" + message + "</h1>");
-		out.println("<form action=\"Controller\" method=\"get\">");
-		// out.println("<input type=\"hidden\" name=\"action\" value=\"docomplete\" />");
-		out.println("<input type=\"submit\" name=\"command\" value=\"Replace\" />");
-		out.println("<input type=\"text\" name=\"message\" />");
-		out.println("<br /><br />");
-		out.println("<input type=\"submit\" name=\"command\" value=\"Refresh\" />");
-		out.println("<br /><br />");
-		out.println("<input type=\"submit\" name=\"command\" value=\"Logout\" />");
-		out.println("<br /><br />");
-		out.println("</form>");
+		// only print the form if the user has not logged out
+		if (action == null || ! action.equals("Logout")) {
+			out.println("<form action=\"Controller\" method=\"get\">");
+			out.println("<input type=\"submit\" name=\"command\" value=\"Replace\" />");
+			out.println("<input type=\"text\" name=\"message\" />");
+			out.println("<br /><br />");
+			out.println("<input type=\"submit\" name=\"command\" value=\"Refresh\" />");
+			out.println("<br /><br />");
+			out.println("<input type=\"submit\" name=\"command\" value=\"Logout\" />");
+			out.println("<br /><br />");
+			out.println("</form>");
+		}
 		out.println("<p>Session on (Local): " + request.getLocalAddr().toString() + " | Port: "
 		+ request.getLocalPort() +"</p>");
 		out.println("<p>Session on (Remote): " + request.getRemoteAddr().toString() + " | Port: "
 		+ request.getRemotePort() +"</p>");
 		out.println("<p>Expires: " + user.getExpires() + "</p>");
+		out.println("<p>Version: " + user.getVersionNumber() + "</p>");
 		out.println("</body></html>");
 
 	}
