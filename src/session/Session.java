@@ -8,13 +8,14 @@ public class Session {
 	private String sessionID;
 	private Integer versionNumber;
 	private Timestamp expires = new Timestamp(0);
-	private ConcurrentHashMap<String, String[]> sessionTable = new ConcurrentHashMap<String, String[]>();
+	protected static ConcurrentHashMap<String, String[]> sessionTable = new ConcurrentHashMap<String, String[]>();
 	
 	/**Creates session object*/
 	public Session(){
 		Date date = new Date();
 		Timestamp stamp = new Timestamp(date.getTime());
-		expires.setTime(stamp.getTime() + 6000000);
+		//Convert stamp to seconds
+		expires.setTime((stamp.getTime()/1000) + 600);
 		versionNumber = 0;
 	}
 	
@@ -24,7 +25,7 @@ public class Session {
 		String sID = (clientIP + this.expires.toString()).replaceAll("[^0-9]","");
 		setSessionID(sID);
 		
-		//Add This Session Object To The Hashtable
+		//Add This Session Object To The ConcurrentHashtable
 		writeData(data);
 	}
 	/**Fetches existing session*/
