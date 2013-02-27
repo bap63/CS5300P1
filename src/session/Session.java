@@ -54,7 +54,7 @@ public class Session {
 	
 	protected void writeData(String data){
 		versionNumber++;
-		String[] temp = {data, versionNumber.toString(), expires.toString()};
+		String[] temp = {data, versionNumber.toString(), expires.toString(), String.valueOf(expires.getTime())};
 		sessionTable.put(sessionID, temp);
 	}
 	

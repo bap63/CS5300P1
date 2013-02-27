@@ -22,7 +22,7 @@ public class Cleanup extends TimerTask {
 				// 600 here is seconds
 				//NEED TO CHECK THE CALC HERE. GETTING A NFE ERROR
 				System.out.println(s[2]);
-				if ((now - Long.parseLong(s[2], 10)) > 600) {
+				if ((now - Long.parseLong(s[3], 10)) > 600) {
 					hMap.remove(key);
 					System.out.println(key
 							+ " has been removed from the hash table.");
