@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @WebServlet("/Controller")
 public class Controller extends HttpServlet {
+	Session user = new Session();
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -42,7 +43,6 @@ public class Controller extends HttpServlet {
 
 		//Get action user is trying to execute
 		String action = (String) request.getParameter("command");
-		Session user = new Session();
 		String localSessionID = "";
 
 		Cookie[] cookies = request.getCookies();
