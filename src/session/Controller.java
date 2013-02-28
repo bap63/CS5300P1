@@ -61,24 +61,26 @@ public class Controller extends HttpServlet {
 
 		// Get action user is trying to execute
 		String action = (String) request.getParameter("command");
+		// initialize session and cookie vars
 		String localSessionID = "";
-
+		String cookieData = "";
+		Cookie myCookie = null;
+		// default session storage location is this server
+		String[] locations = {request.getLocalAddr().toString()};
+		// helps us remember a user's login state
+		boolean userLoggedOut = false;
+		
 		// Get any existing cookies for the site and look for ours
 		Cookie[] cookies = request.getCookies();
-		Cookie myCookie = null;
 		if (cookies == null) {
 			// set the default message
 			message = "Welcome!";
 			//out.println("Welcome! A new session has been created.");
-			// Creates a new cookie
+			// Creates a new session
 			user.getSession(message, request.getRemoteAddr());
-			String[] locations = {request.getLocalAddr().toString()};
-			String cookieData = user.createCookieData(locations);
 			localSessionID = user.getSessionID();
+			// initialize the new cookie - the real cookie value and exp will be set later
 			myCookie = new Cookie(cookieName, cookieData);
-			// use the session expiration time for the cookie expiration
-			myCookie.setMaxAge(user.getExpTime());
-			response.addCookie(myCookie);
 		} else {
 			// Read existing cookies to look for ours
 			for (Cookie retrievedCookie : cookies) {
@@ -91,19 +93,19 @@ public class Controller extends HttpServlet {
 					user.parseCookieData(value);
 					localSessionID = user.getSessionID();
 					//out.println(localSessionID + "<br />");
+					// find the existing session using the ID
 					user.fetchSession(localSessionID);
-					// TODO: session version and exp must be incremented on every request.
-					// this should happen in both the session data and the cookie
-					
+					// initialize the message by reading from the session data store
+					message = user.readData();
 				}
 			}
 		}
-		// if an action was passed in, execute it
+		
+		// if an action was triggered, execute it
 		if (action != null && action != "") {
 			// replace the current message stored in the session with the new one
 			if (action.equals("Replace")) {
 				message = request.getParameter("message");
-				user.writeData(message);
 			// log the user out by destroying the cookie; 
 			// session data will be removed as part of the normal session cleanup process
 			} else if (action.equals("Logout") && myCookie != null) {
@@ -112,15 +114,27 @@ public class Controller extends HttpServlet {
 				myCookie.setMaxAge(0);
 				response.addCookie(myCookie);
 				message = "You have been logged out.";
+				userLoggedOut = true;
 				//out.println("Session ended.");
-			// for reloads, retrieve the existing message from the session data store
-			} else if (action.equals("Reload")) {
-				message = user.readData();
 			} else {
-				//out.println("Invalid action");
+				// Refresh and any other random actions will do nothing
 			}
-
 		}
+		
+		// unless the user has logged out, we must update the session with the
+		// newest message, incrementing the session version number and expiration
+		// in the process; then we also update the cookie and its expiration time
+		if (! userLoggedOut) {
+			// update the session storage
+			user.writeData(message);
+			// always use the session expiration time for the cookie expiration
+			myCookie.setMaxAge(user.getExpTime());
+			// create the data string for the cooke and save it
+			cookieData = user.createCookieData(locations);
+			myCookie.setValue(cookieData);
+			response.addCookie(myCookie);
+		}
+		
 		
 		// HTML Form !!! REMEMBER TO CHANGE BACK TO POST !!!
 		// Also need: the expiration time for the session, the network address and port of the server
@@ -128,7 +142,7 @@ public class Controller extends HttpServlet {
 		out.println("<html><head></head><body>");
 		out.println("<h1>" + message + "</h1>");
 		// only print the form if the user has not logged out
-		if (action == null || ! action.equals("Logout")) {
+		if (! userLoggedOut) {
 			out.println("<form action=\"Controller\" method=\"get\">");
 			out.println("<input type=\"submit\" name=\"command\" value=\"Replace\" />");
 			out.println("<input type=\"text\" name=\"message\" />");

@@ -25,9 +25,7 @@ public class Session {
 		String sID = (clientIP + this.expires.toString()).replaceAll("[^0-9]","");
 		setSessionID(sID);
 		// reset version #
-		versionNumber = 0;		
-		//Add This Session Object To The ConcurrentHashtable
-		writeData(data);
+		versionNumber = 0;	
 	}
 	
 	/**Initializes an existing session*/
@@ -52,6 +50,7 @@ public class Session {
 	protected void setExpires() {
 		Date date = new Date();
 		Timestamp stamp = new Timestamp(date.getTime());
+		// set the expiration - note expTime is in seconds, we need microseconds
 		expires.setTime(stamp.getTime() + (expTime * 1000));
 	}
 
