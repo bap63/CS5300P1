@@ -7,8 +7,10 @@ Running The Project
 -------------------
 You can run our assignment by deploying the compiled WAR file to a tomcat server.
 Using eclipse, you can run our project by creating a new dynamic webproject called 
-CS5300P1, then merging this entire directory with the blank project. Run using a 
-tomcat 7 webserver.
+CS5300P1, then merging this entire directory with the blank project or import the .war file. Run using a tomcat 7 webserver.
+
+If you plan to deploy the war file to an Amazon Elastic Beanstalk instance you must have 
+an application and an environment setup. You will then upload the war file to the interface and then finally when you launch the application, you will need to add the path '/Controller' to the root. Example: http://mcg67test.elasticbeanstalk.com/Controller. Please note this instance is not currently active.
 
 
 Overall Structure
