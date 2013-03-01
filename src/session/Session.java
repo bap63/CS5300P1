@@ -34,14 +34,17 @@ public class Session {
 		setSessionID(sID);
 	}
 	
+	// return sessionID
 	protected String getSessionID() {
 		return sessionID;
 	}
 	
+	// set sessionID to given value
 	protected void setSessionID(String sessionID) {
 		this.sessionID = sessionID;
 	}
 	
+	// return current version #
 	protected int getVersionNumber() {
 		return versionNumber;
 	}
@@ -54,20 +57,24 @@ public class Session {
 		expires.setTime(stamp.getTime() + (expTime * 1000));
 	}
 
+	// return the current expiration timestamp
 	protected Timestamp getExpires() {
 		return expires;
 	}
 	
+	// return the expiration time window
 	protected int getExpTime() {
 		return expTime;
 	}
 	
+	// increment version number and store current data in session table
 	protected void writeData(String data){
 		versionNumber++;
 		String[] temp = {data, versionNumber.toString(), expires.toString(), String.valueOf(expires.getTime())};
 		sessionTable.put(sessionID, temp);
 	}
 	
+	// retrieve the message data associated with the current session from the session table
 	protected String readData(){
 		try
 		{
@@ -79,7 +86,7 @@ public class Session {
 	}
 	
 	// parse the data string stored in the cookie to extract the session ID
-	// TODO: do we need anything else from the cookie? version #?
+	// TODO (for part b): do we need anything else from the cookie? version #?
 	protected void parseCookieData(String data) {
 		String[] cookiePieces = data.split("#");
 		this.setSessionID(cookiePieces[0]);
