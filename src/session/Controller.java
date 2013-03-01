@@ -37,10 +37,10 @@ public class Controller extends HttpServlet {
 		super();
 
 		// Cleanup Daemon Initialization (Calls Cleanup using a timer object) 10mins 30mins
-		//cleanerTimer.schedule(cleaner, 600000, 1800000);
+		cleanerTimer.schedule(cleaner, 600000, 1800000);
 		
-		//Shorter Time For Testing 2secs 30secs
-		cleanerTimer.schedule(cleaner, 2000, 30000);
+		//Shorter Time - use only for testing - 2secs 30secs
+		//cleanerTimer.schedule(cleaner, 2000, 30000);
 	}
 
 	/**
