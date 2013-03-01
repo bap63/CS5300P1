@@ -145,7 +145,7 @@ public class Controller extends HttpServlet {
 		if (! userLoggedOut) {
 			out.println("<form action=\"Controller\" method=\"get\">");
 			out.println("<input type=\"submit\" name=\"command\" value=\"Replace\" />");
-			out.println("<input type=\"text\" name=\"message\" />");
+			out.println("<input type=\"text\" maxlength=\"256\" name=\"message\" />");
 			out.println("<br /><br />");
 			out.println("<input type=\"submit\" name=\"command\" value=\"Refresh\" />");
 			out.println("<br /><br />");

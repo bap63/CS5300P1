@@ -70,6 +70,9 @@ public class Session {
 	// increment version number and store current data in session table
 	protected void writeData(String data){
 		versionNumber++;
+		if(data.length() > 256){
+			data = data.substring(0,256);
+		}
 		String[] temp = {data, versionNumber.toString(), expires.toString(), String.valueOf(expires.getTime())};
 		sessionTable.put(sessionID, temp);
 	}
