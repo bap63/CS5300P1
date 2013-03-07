@@ -35,22 +35,22 @@ public class Session {
 	}
 	
 	// return sessionID
-	protected String getSessionID() {
+	public String getSessionID() {
 		return sessionID;
 	}
 	
 	// set sessionID to given value
-	protected void setSessionID(String sessionID) {
+	public void setSessionID(String sessionID) {
 		this.sessionID = sessionID;
 	}
 	
 	// return current version #
-	protected int getVersionNumber() {
+	public int getVersionNumber() {
 		return versionNumber;
 	}
 
 	// set the expiration timestamp
-	protected void setExpires() {
+	public void setExpires() {
 		Date date = new Date();
 		Timestamp stamp = new Timestamp(date.getTime());
 		// set the expiration - note expTime is in seconds, we need microseconds
@@ -58,17 +58,17 @@ public class Session {
 	}
 
 	// return the current expiration timestamp
-	protected Timestamp getExpires() {
+	public Timestamp getExpires() {
 		return expires;
 	}
 	
 	// return the expiration time window
-	protected int getExpTime() {
+	public int getExpTime() {
 		return expTime;
 	}
 	
 	// increment version number and store current data in session table
-	protected void writeData(String data){
+	public void writeData(String data){
 		versionNumber++;
 		if(data.length() > 256){
 			data = data.substring(0,256);
@@ -78,7 +78,7 @@ public class Session {
 	}
 	
 	// retrieve the message data associated with the current session from the session table
-	protected String readData(){
+	public String readData(){
 		try
 		{
 			return sessionTable.get(sessionID)[0];
@@ -90,14 +90,14 @@ public class Session {
 	
 	// parse the data string stored in the cookie to extract the session ID
 	// TODO (for part b): do we need anything else from the cookie? version #?
-	protected void parseCookieData(String data) {
+	public void parseCookieData(String data) {
 		String[] cookiePieces = data.split("#");
 		this.setSessionID(cookiePieces[0]);
 		//this.setVersionNumber(cookiePieces[1]); 
 	}
 	
 	// create the data string to be stored in the cookie
-	protected String createCookieData(String[] locations) {
+	public String createCookieData(String[] locations) {
 		String cookieData = this.getSessionID() + "#" + this.getVersionNumber()
 		+ "#" + locations[0];
 		return cookieData;

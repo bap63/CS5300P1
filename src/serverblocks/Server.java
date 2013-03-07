@@ -8,7 +8,7 @@ public class Server {
 	public Integer portNumber;
 	
 	/**
-	 * Constructor when objects are pased to create a server 
+	 * Constructor when objects are passed to create a server 
 	 */
 	public Server(InetAddress serverIP, int serverPort){
 		ipAddress = serverIP;
