@@ -94,7 +94,7 @@ public class rpcServer extends Thread {
 			String x = null;
 			String message = null;
 			try{
-				//Need a way to add the data from the retieved session to the string
+				//Need a way to add the data from the retrieved session to the string
 				x = URLDecoder.decode("","UTF-8"));
 				message = URLDecoder.decode("","UTF-8"));
 			}catch(UnsupportedEncodingException e){

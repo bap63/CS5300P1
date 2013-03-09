@@ -2,6 +2,8 @@ package session;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 
 import javax.servlet.Servlet;
@@ -11,6 +13,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import serverblocks.Server;
 
 /**
  * Servlet implementation class Controller
@@ -28,7 +32,7 @@ public class Controller extends HttpServlet {
 	// Constant values
 	private static String cookieName = "CS5300PROJ1SESSION";
 
-	
+	private static List<Server> servers = new ArrayList<Server>();
 	private String message = "";
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -66,7 +70,9 @@ public class Controller extends HttpServlet {
 		String cookieData = "";
 		Cookie myCookie = null;
 		// default session storage location is this server
-		String[] locations = {request.getLocalAddr().toString()};
+		Server s = new Server(request.getLocalAddr().toString(), Integer.toString(request.getLocalPort()));
+		servers.add(s);
+		//String[] locations = {request.getLocalAddr().toString()};
 		// helps us remember a user's login state
 		boolean userLoggedOut = false;
 		
@@ -130,7 +136,7 @@ public class Controller extends HttpServlet {
 			// always use the session expiration time for the cookie expiration
 			myCookie.setMaxAge(user.getExpTime());
 			// create the data string for the cookie and save it
-			cookieData = user.createCookieData(locations);
+			cookieData = user.createCookieData(s);
 			myCookie.setValue(cookieData);
 			response.addCookie(myCookie);
 		}
