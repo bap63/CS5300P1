@@ -129,7 +129,7 @@ public class Controller extends HttpServlet {
 			user.writeData(message);
 			// always use the session expiration time for the cookie expiration
 			myCookie.setMaxAge(user.getExpTime());
-			// create the data string for the cooke and save it
+			// create the data string for the cookie and save it
 			cookieData = user.createCookieData(locations);
 			myCookie.setValue(cookieData);
 			response.addCookie(myCookie);
@@ -137,7 +137,6 @@ public class Controller extends HttpServlet {
 		
 		
 		// HTML Form !!! REMEMBER TO CHANGE BACK TO POST !!!
-		// Also need: the expiration time for the session, the network address and port of the server
 		out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
 		out.println("<html><head></head><body>");
 		out.println("<h1>" + message + "</h1>");
@@ -150,6 +149,8 @@ public class Controller extends HttpServlet {
 			out.println("<input type=\"submit\" name=\"command\" value=\"Refresh\" />");
 			out.println("<br /><br />");
 			out.println("<input type=\"submit\" name=\"command\" value=\"Logout\" />");
+			out.println("<br /><br />");
+			out.println("<input type=\"submit\" name=\"command\" value=\"SimulateCrash\" />");
 			out.println("<br /><br />");
 			out.println("</form>");
 		}

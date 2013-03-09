@@ -74,7 +74,8 @@ public class rpcServer extends Thread {
 			response = uniqueID;
 		}else if(actionType == 1){
 			//GET
-			retreivedSession = //Need a way to get a session via uniqueID;
+			//Need a way to get a session via uniqueID
+			retreivedSession = retreivedSession;
 			if(retreivedSession == null){
 				response = "";
 			}else{

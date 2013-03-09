@@ -13,7 +13,8 @@ import java.net.SocketException;
 import java.net.URLDecoder;
 import java.util.UUID;
 
-import org.apache.catalina.Session;
+//import org.apache.catalina.Session;
+import session.*;
 
 import serverblocks.Server;
 
@@ -178,8 +179,9 @@ public class rpcClient {
 	// Code 2: Put
 	public static Session put(session.Session s){
 		System.out.println("PUTTING to Session: " + s);
+		int numServers = serverblocks.ServerManager.numServers();
 		DatagramSocket rpcSocket;
-		DatagramPacket rpcPacket;
+		//DatagramPacket rpcPacket;
 		try{
 			//NEED Number of servers
 			
@@ -196,11 +198,11 @@ public class rpcClient {
 		    //For loop sends the packet to the list of all the servers
 		    //NEED A LOCATION FUNCTION IN SESSION CLASS! CONTROLLER CONSTRUCTIONS LOCATION
 		    //BUT DEPENDS ON THE GROUP SENSING FUNCTION!
-		    for (Server sNode : 10/*Group Membership.getServers*/) {
+		    for (Server sNode : serverblocks.ServerManager.getServerList()) {
 		        DatagramPacket sendPkt = new DatagramPacket(encodedByte, encodedByte.length, sNode.ipAddress, sNode.portNumber);
 		        try {
 		          rpcSocket.send(sendPkt);
-		          System.out.println("Sent packet: " + rpcPacket.toString() + "@ Server: " + sNode.toString());
+		          System.out.println("Sent packet: " + sendPkt.toString() + "@ Server: " + sNode.toString());
 		        } catch (IOException e) {
 		          e.printStackTrace();
 		        }
@@ -216,14 +218,13 @@ public class rpcClient {
 		 	do {
 		        try {
 		          rpcSocket.receive(receivingPacket);
-		          String data = byteEncoder(recBuffer);
+		          String data = byteDecoder(recBuffer);
 		          //System.out.println("Put client received:" + response);
 		          if (data.split(",")[0].equals(uniqueID)) {
 		        	  receiveCount++;
 		            //s.addLocation(new Server(recvPkt.getAddress(), recvPkt.getPort()));
 		          }
 		        } catch (IOException e) {
-		          // TODO Auto-generated catch block
 		          e.printStackTrace();
 		          return null;
 
@@ -232,5 +233,7 @@ public class rpcClient {
 		}catch (IOException e){
 			 e.printStackTrace();
 		}
+		System.out.println("Client finished put");
+	    return s;
 	}
 }
