@@ -10,7 +10,7 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.net.URLDecoder;
+//import java.net.URLDecoder;
 import java.util.UUID;
 
 //import org.apache.catalina.Session;
@@ -31,7 +31,7 @@ public class rpcClient {
 	private static int opCodePUT = 2;
 	private static int bufferSize = 512;
 	private static final double lamba = 1.0;
-	private static final double ro = 2.0;
+	//private static final double ro = 2.0;
 
 	// Converts a string to a byte array for UDP Packaging
 	public static byte[] byteEncoder(String s) {
@@ -112,7 +112,7 @@ public class rpcClient {
 	public static Session get(session.Session s) {
 		System.out.println("GETTING from Session: " + s);
 		DatagramSocket rpcSocket;
-		DatagramPacket rpcPacket;
+		//DatagramPacket rpcPacket;
 		try {
 			rpcSocket = new DatagramSocket();
 			rpcSocket.setSoTimeout(TIMEOUT);
@@ -134,7 +134,7 @@ public class rpcClient {
 						encodedByte.length, sNode.ipAddress, sNode.portNumber);
 				try {
 					rpcSocket.send(sendPkt);
-					System.out.println("Sent packet: " + rpcPacket.toString()
+					System.out.println("Sent packet: " + sendPkt.toString()
 							+ "@ Server: " + sNode.toString());
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -174,6 +174,7 @@ public class rpcClient {
 		}
 		System.out.println("Server:" + s + " is Online!");
 		// return true;
+		return s;
 	}
 
 	// Code 2: Put
@@ -211,7 +212,7 @@ public class rpcClient {
 		    int receiveCount = 0;
 		    // !------------------RECEIVE PACKET---------------//
 		    byte[] recBuffer = new byte[bufferSize];
-		 	byte[] tempByte = new byte[bufferSize];
+		 	//byte[] tempByte = new byte[bufferSize];
 		 	DatagramPacket receivingPacket = new DatagramPacket(recBuffer, recBuffer.length);
 		 	
 		 	
