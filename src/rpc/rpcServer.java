@@ -75,15 +75,19 @@ public class rpcServer extends Thread {
 		}else if(actionType == 1){
 			//GET
 			//Need a way to get a session via uniqueID
-			retreivedSession = retreivedSession;
+			String sID = sessionID;
+			retreivedSession = new session.Session();
+			retreivedSession.fetchSession(sID);
 			if(retreivedSession == null){
 				response = "";
 			}else{
 				response = uniqueID;
 				try{
 					//Need a way to pass the data from the retrieved session
-					response = response + "," + URLEncoder.encode("","UTF-8")); //Get Data 'count'
-					response = response + "," + URLEncoder.encode("","UTF-8")); //Get Data 'Message'
+					String rData = retreivedSession.readData();
+					String rVersion = Integer.toString(retreivedSession.getVersionNumber());
+					response = response + "," + URLEncoder.encode(rVersion,"UTF-8"); //Get Version Number
+					response = response + "," + URLEncoder.encode(rData,"UTF-8"); //Get Data 'Message'
 				} catch (UnsupportedEncodingException e){
 					e.printStackTrace();
 					System.out.println("rpcServer Response Builder GET");
@@ -91,12 +95,15 @@ public class rpcServer extends Thread {
 			}
 		}else if(actionType == 2){
 			//PUT
-			String x = null;
 			String message = null;
 			try{
+				String sID = sessionID;
+				retreivedSession = new session.Session();
+				retreivedSession.fetchSession(sID);
+				retreivedSession.fetchSession(sID);
+				String rData = retreivedSession.readData();
 				//Need a way to add the data from the retrieved session to the string
-				x = URLDecoder.decode("","UTF-8"));
-				message = URLDecoder.decode("","UTF-8"));
+				message = URLDecoder.decode(rData,"UTF-8");
 			}catch(UnsupportedEncodingException e){
 				e.printStackTrace();
 				System.out.println("rpcServer Response Builder PUT");
