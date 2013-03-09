@@ -1,8 +1,12 @@
 package session;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.*;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
+import serverblocks.Server;
 
 // Manage the user's session data, which is stored in a ConcurrentHashMap structure keyed on session ID
 public class Session {
@@ -11,6 +15,7 @@ public class Session {
 	private Timestamp expires = new Timestamp(0);
 	protected static ConcurrentHashMap<String, String[]> sessionTable = new ConcurrentHashMap<String, String[]>();
 	private static int expTime = 600;  // session expiration time in seconds, i.e. 10 min
+	 private List<Server> locations = new ArrayList<Server>();
 	
 	/**Creates session object*/
 	public Session() {
@@ -102,4 +107,12 @@ public class Session {
 		+ "#" + locations[0];
 		return cookieData;
 	}
+	
+	 public void setLocations(List<Server> list) {
+	      locations = list;
+	   }
+	 
+	 public List<Server> getLocations() {
+	      return locations;
+	   }
 }
