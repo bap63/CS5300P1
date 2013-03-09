@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import serverblocks.Server;
+import serverblocks.*;
 
 // Manage the user's session data, which is stored in a ConcurrentHashMap structure keyed on session ID
 public class Session {
@@ -109,6 +109,8 @@ public class Session {
 		for (int i=0; i<servers.length; i++) {
 			Server s = new Server(servers[i]);
 			serverList.add(s);
+			// also make sure this server is in the master list
+			ServerManager.addServer(s);
 		}
 		this.setLocations(serverList);
 	}
@@ -120,8 +122,10 @@ public class Session {
 		for (int i=0; i<locations.size(); i++) {
 			tmpLocations += locations.get(i).toString() + "_";
 		}
-		String cookieData = this.getSessionID() + "#" + this.getVersionNumber()
-		+ "#" + tmpLocations;
+		// remove trailing "_"
+		tmpLocations = tmpLocations.substring(0, tmpLocations.length()-1);
+		// create cookie data by concatenating session id, version and location string, delimited by "#"
+		String cookieData = this.getSessionID() + "#" + this.getVersionNumber() + "#" + tmpLocations;
 		return cookieData;
 	}
 	
