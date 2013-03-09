@@ -20,7 +20,7 @@ public class Cleanup extends TimerTask {
 				String key = i.nextElement();
 				String[] s = hMap.get(key);
 				// 600 here is seconds
-				//NEED TO CHECK THE CALC HERE. GETTING A NFE ERROR
+				// NEED TO CHECK THE CALC HERE. GETTING A NFE ERROR
 				System.out.println(s[2]);
 				if ((now - Long.parseLong(s[3], 10)) > 600) {
 					hMap.remove(key);
@@ -31,7 +31,7 @@ public class Cleanup extends TimerTask {
 			System.out.print("Cleanup Daemon Complete. ");
 		} catch (NumberFormatException nfe) {
 			nfe.printStackTrace();
-			//System.out.println("Greeeee");
+			// System.out.println("Greeeee");
 		}
 
 	}
