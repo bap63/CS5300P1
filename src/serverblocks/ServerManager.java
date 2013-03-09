@@ -58,6 +58,12 @@ public class ServerManager extends Thread {
 		return servers;
 	}
 	
+	public static void addServer(Server s){
+		if(!servers.contains(s.toString())){
+			servers.add(s);
+		}
+	}
+	
 	public static int numServers() {
 		int size = servers.size();
 		return size;
