@@ -30,6 +30,20 @@ public class Server {
 	}
 	
 	/**
+	 * Constructor when a single string combining IP and port is passed
+	 */
+	public Server (String serverIPPort) {
+		String[] pieces = serverIPPort.split(":");
+		try{
+			ipAddress = InetAddress.getByName(pieces[0]);
+			portNumber = Integer.parseInt(pieces[1]);
+		}catch (UnknownHostException e){
+			System.out.println("Server does not exist!");
+			e.printStackTrace();
+		}
+	}
+	
+	/**
 	 * To String Method gives the IpAddress and the port number is this form
 	 * ipAddress:portNumber
 	 */

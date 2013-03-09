@@ -15,7 +15,7 @@ public class Session {
 	private Timestamp expires = new Timestamp(0);
 	protected static ConcurrentHashMap<String, String[]> sessionTable = new ConcurrentHashMap<String, String[]>();
 	private static int expTime = 600;  // session expiration time in seconds, i.e. 10 min
-	 private List<Server> locations = new ArrayList<Server>();
+	private List<Server> locations = new ArrayList<Server>();
 	
 	/**Creates session object*/
 	public Session() {
@@ -52,6 +52,11 @@ public class Session {
 	// return current version #
 	public int getVersionNumber() {
 		return versionNumber;
+	}
+	
+	// set version #
+	public void setVersionNumber(int v) {
+		this.versionNumber = v;
 	}
 
 	// set the expiration timestamp
@@ -93,18 +98,30 @@ public class Session {
 		}
 	}
 	
-	// parse the data string stored in the cookie to extract the session ID
-	// TODO (for part b): do we need anything else from the cookie? version #?
+	// parse the data string stored in the cookie to extract and set the session ID
+	// plus the version number and server locations
 	public void parseCookieData(String data) {
 		String[] cookiePieces = data.split("#");
 		this.setSessionID(cookiePieces[0]);
-		//this.setVersionNumber(cookiePieces[1]); 
+		this.setVersionNumber(Integer.parseInt(cookiePieces[1]));
+		String[] servers = cookiePieces[2].split("_");
+		List<Server> serverList = new ArrayList<Server>();
+		for (int i=0; i<servers.length; i++) {
+			Server s = new Server(servers[i]);
+			serverList.add(s);
+		}
+		this.setLocations(serverList);
 	}
 	
 	// create the data string to be stored in the cookie
-	public String createCookieData(String[] locations) {
+	public String createCookieData(List<Server> locations) {
+		String tmpLocations = "";
+		// convert the servers into a string delimited by "_"
+		for (int i=0; i<locations.size(); i++) {
+			tmpLocations += locations.get(i).toString() + "_";
+		}
 		String cookieData = this.getSessionID() + "#" + this.getVersionNumber()
-		+ "#" + locations[0];
+		+ "#" + tmpLocations;
 		return cookieData;
 	}
 	
