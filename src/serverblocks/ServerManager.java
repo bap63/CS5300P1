@@ -33,19 +33,19 @@ public class ServerManager extends Thread {
 		while (simulateCrashOff) {
 			try {
 				Thread.sleep(checkRate * 1000);
-				pingAllServers();
+				pingRandomServer();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 	
-	private void pingAllServers(){
-		System.out.println("Ping All Servers, Starting with: " + currentServer.toString());
+	private void pingRandomServer(){
 		
 		//Probe A Server To Check If It Is Alive
 		int y = x.nextInt(servers.size());
 		Server test = servers.get(y);
+		System.out.println("Ping a random server " + test.toString());
 		//Checking server 'test'
 		//If checker returns false then kill it
 		boolean flag = rpcClient.checker(test);
@@ -54,12 +54,31 @@ public class ServerManager extends Thread {
 		}
 	}
 	
+	// Get the full list of servers
 	public static List<Server> getServerList(){
 		return servers;
 	}
+
+	// Get a limited number of servers from the full list
+	public static List<Server> getServerList(int num) {
+		if (num >= servers.size()) {
+			return servers;
+		} else {
+			return servers.subList(0, num-1);
+		}
+	}
 	
-	public static void addServer(Server s){
-		if(!servers.contains(s.toString())){
+	public static void addServer(Server s) {
+		boolean inList = false;
+		for (Server tmpServer : servers) {
+			//System.out.println("s:" + s.toString() + " tmpServer:" + tmpServer.toString());
+			if (tmpServer.equals(s)) {
+				inList = true;
+				//System.out.println("Equal!");
+				break;
+			}
+		}
+		if (! inList) {
 			servers.add(s);
 		}
 	}

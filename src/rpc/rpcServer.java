@@ -10,6 +10,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 
 import session.Session;
+import serverblocks.*;
 
 public class rpcServer extends Thread {
 	protected static boolean simulateCrashOff = true;
@@ -69,10 +70,10 @@ public class rpcServer extends Thread {
 		String response = null;
 		
 		//Manage the response from the String
-		if (actionType == 0){
+		if (actionType == rpcClient.OPCODE_PROBE){
 			//Probe
 			response = uniqueID;
-		}else if(actionType == 1){
+		}else if(actionType == rpcClient.OPCODE_GET){
 			//GET
 			//Need a way to get a session via uniqueID
 			String sID = sessionID;
@@ -93,15 +94,15 @@ public class rpcServer extends Thread {
 					System.out.println("rpcServer Response Builder GET");
 				}
 			}
-		}else if(actionType == 2){
+		}else if(actionType == rpcClient.OPCODE_PUT){
 			//PUT
 			String message = null;
 			try{
 				String sID = sessionID;
 				retreivedSession = new session.Session();
 				retreivedSession.fetchSession(sID);
-				retreivedSession.fetchSession(sID);
 				String rData = retreivedSession.readData();
+				//TODO: are we supposed to now store the message data received from the rpc packet into the session? 
 				//Need a way to add the data from the retrieved session to the string
 				message = URLDecoder.decode(rData,"UTF-8");
 			}catch(UnsupportedEncodingException e){
@@ -131,6 +132,9 @@ public class rpcServer extends Thread {
 				rpcSocket.receive(receivingPacket);
 				InetAddress ipAddressReturn = receivingPacket.getAddress();
 				int receivingPort = receivingPacket.getPort();
+				// add this server to the list of known servers
+				Server s = new Server(ipAddressReturn, receivingPort);
+				ServerManager.addServer(s);
 				byte[] tempByte = responseBuilder(receivingPacket.getData(),
 						receivingPacket.getLength());
 				DatagramPacket sendingPacket = new DatagramPacket(tempByte,

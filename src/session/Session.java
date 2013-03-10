@@ -117,15 +117,17 @@ public class Session {
 	
 	// create the data string to be stored in the cookie
 	public String createCookieData(List<Server> locations) {
+		this.setLocations(locations);
 		String tmpLocations = "";
 		// convert the servers into a string delimited by "_"
-		for (int i=0; i<locations.size(); i++) {
-			tmpLocations += locations.get(i).toString() + "_";
+		for (Server s : locations) {
+			tmpLocations += s.toString() + "_";
 		}
 		// remove trailing "_"
 		tmpLocations = tmpLocations.substring(0, tmpLocations.length()-1);
 		// create cookie data by concatenating session id, version and location string, delimited by "#"
 		String cookieData = this.getSessionID() + "#" + this.getVersionNumber() + "#" + tmpLocations;
+		System.out.println("cookieData: " + cookieData);
 		return cookieData;
 	}
 	

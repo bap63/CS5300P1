@@ -51,8 +51,11 @@ public class Server {
 		return ipAddress.getHostAddress() + ":" + portNumber;
 	}
 	
+	/**
+	 * Determine if 2 server objects are equivalent (same IP and port)
+	 */
 	public boolean equals(Server s) {
-		if(ipAddress == s.ipAddress && portNumber == s.portNumber){
+		if (this.toString().equals(s.toString())) {
 			return true;
 		}
 		return false;

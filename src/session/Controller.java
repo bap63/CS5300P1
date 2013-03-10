@@ -94,11 +94,8 @@ public class Controller extends HttpServlet {
 		String localSessionID = "";
 		String cookieData = "";
 		Cookie myCookie = null;
-		// default session storage location is this server
-		Server s = new Server(request.getLocalAddr().toString(),
-				Integer.toString(request.getLocalPort()));
-		servers.add(s);
-		// String[] locations = {request.getLocalAddr().toString()};
+		// get 2 servers from the server manager for session storage (a primary and a backup)
+		servers = ServerManager.getServerList(2);
 		// helps us remember a user's login state
 		boolean userLoggedOut = false;
 
@@ -195,13 +192,22 @@ public class Controller extends HttpServlet {
 			out.println("</form>");
 		}
 		out.println("<p>Session on (Local): "
-				+ request.getLocalAddr().toString() + " | Port: "
+				+ request.getLocalAddr() + " | Port: "
 				+ request.getLocalPort() + "</p>");
 		out.println("<p>Session on (Remote): "
-				+ request.getRemoteAddr().toString() + " | Port: "
+				+ request.getRemoteAddr() + " | Port: "
 				+ request.getRemotePort() + "</p>");
+		List<Server> ippLocations = user.getLocations();
+		for (Server ipp : ippLocations) {
+			out.println("<p>IPP: " + ipp.toString() + "</p>");
+		}
 		out.println("<p>Expires: " + user.getExpires() + "</p>");
 		out.println("<p>Version: " + user.getVersionNumber() + "</p>");
+		List<Server> allLocations = ServerManager.getServerList();
+		out.println("<p>Full Server List:</p>");
+		for (Server loc : allLocations) {
+			out.println(loc.toString());
+		}
 		out.println("</body></html>");
 
 	}

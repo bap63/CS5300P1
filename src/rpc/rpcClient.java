@@ -26,9 +26,9 @@ import serverblocks.Server;
  * */
 public class rpcClient {
 	private static final Integer TIMEOUT = 2000;
-	private static int opCodeProbe = 0;
-	private static int opCodeGET = 1;
-	private static int opCodePUT = 2;
+	public static int OPCODE_PROBE = 0;
+	public static int OPCODE_GET = 1;
+	public static int OPCODE_PUT = 2;
 	private static int bufferSize = 512;
 	private static final double lamba = 1.0;
 	//private static final double ro = 2.0;
@@ -75,7 +75,7 @@ public class rpcClient {
 			String uniqueID = UUID.randomUUID().toString();
 
 			// Encode string for packet sending
-			String encodeString = (uniqueID + "," + opCodeProbe + ",0,0");
+			String encodeString = (uniqueID + "," + OPCODE_PROBE + ",0,0");
 			byte[] encodedByte = byteEncoder(encodeString);
 
 			rpcPacket = new DatagramPacket(encodedByte, encodedByte.length,
@@ -121,7 +121,7 @@ public class rpcClient {
 			String uniqueID = UUID.randomUUID().toString();
 
 			// Encode string for packet sending
-			String encodeString = (uniqueID + "," + opCodeGET + ","
+			String encodeString = (uniqueID + "," + OPCODE_GET + ","
 					+ s.getSessionID() + "," + s.getVersionNumber());
 			byte[] encodedByte = byteEncoder(encodeString);
 
@@ -193,7 +193,7 @@ public class rpcClient {
 			String uniqueID = UUID.randomUUID().toString();
 			
 			//Encode string for packet sending
-			String encodeString = (uniqueID + "," + opCodePUT + s.getSessionID() + s.getVersionNumber());
+			String encodeString = (uniqueID + "," + OPCODE_PUT + s.getSessionID() + s.getVersionNumber());
 		    byte[] encodedByte = byteEncoder(encodeString);
 		    
 		    //For loop sends the packet to the list of all the servers
