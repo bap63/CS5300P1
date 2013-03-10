@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import serverblocks.*;
+import rpc.rpcClient;
 
 // Manage the user's session data, which is stored in a ConcurrentHashMap structure keyed on session ID
 public class Session {
 	private String sessionID;
 	private Integer versionNumber;
 	private Timestamp expires = new Timestamp(0);
+	private String message = "";
 	protected static ConcurrentHashMap<String, String[]> sessionTable = new ConcurrentHashMap<String, String[]>();
 	private static int expTime = 600;  // session expiration time in seconds, i.e. 10 min
 	private List<Server> locations = new ArrayList<Server>();
@@ -25,18 +27,30 @@ public class Session {
 	}
 	
 	/**Create new session*/
-	public void getSession(String data, String clientIP) {
+	public void createSession(String clientIP) {
 		//Creating UniqueID
 		String sID = (clientIP + this.expires.toString()).replaceAll("[^0-9]","");
 		setSessionID(sID);
 		// reset version #
-		versionNumber = 0;	
+		versionNumber = 0;
 	}
 	
 	/**Initializes an existing session*/
-	public void fetchSession(String sID) {
+	public void getSessionById(String sID, int v) {
 		setExpires();
 		setSessionID(sID);
+		setVersionNumber(v);
+		// TODO: I think we need to use the list of locations to try to get the data, rather than
+		// assuming it's stored locally
+		// get the message from the data store
+		String data = readData();
+		// if nothing is returned, we need to try to get it from another server using the rpc client
+		// TODO: is this right or does this put us into a weird loop?
+		if (data == null) {
+			Session tmpSession = rpcClient.get(this);
+			data = tmpSession.getMessage();
+		}
+		setMessage(data);
 	}
 	
 	// return sessionID
@@ -77,24 +91,49 @@ public class Session {
 		return expTime;
 	}
 	
+	// set the session message
+	public void setMessage(String message) {
+		this.message = message;
+	}
+	
+	// get the session message
+	public String getMessage() {
+		return message;
+	}
+	
 	// increment version number and store current data in session table
 	public void writeData(String data){
 		versionNumber++;
 		if(data.length() > 256){
 			data = data.substring(0,256);
 		}
+		this.setMessage(data);
 		String[] temp = {data, versionNumber.toString(), expires.toString(), String.valueOf(expires.getTime())};
 		sessionTable.put(sessionID, temp);
+		
+		// reset the location list to contain only this server
+		this.clearLocations();
+		this.addLocation(Controller.localserver);
+
+		// now we also want to write the data to a backup server using the RPC client
+		Session tmpSession = rpcClient.put(this);
+		this.setLocations(tmpSession.getLocations());
 	}
 	
 	// retrieve the message data associated with the current session from the session table
 	public String readData(){
 		try
 		{
-			return sessionTable.get(sessionID)[0];
+			String[] temp = sessionTable.get(sessionID);
+			// make sure version matches - if not, return null
+			if (versionNumber.toString().equals(temp[1])) {
+				return temp[0];
+			} else {
+				return null;
+			}
 		}
 		catch(NullPointerException e){
-			return "Error: Session ID not found";
+			return null;
 		}
 	}
 	
@@ -116,26 +155,37 @@ public class Session {
 	}
 	
 	// create the data string to be stored in the cookie
-	public String createCookieData(List<Server> locations) {
-		this.setLocations(locations);
+	public String createCookieData() {
 		String tmpLocations = "";
 		// convert the servers into a string delimited by "_"
-		for (Server s : locations) {
+		for (Server s : this.getLocations()) {
 			tmpLocations += s.toString() + "_";
 		}
 		// remove trailing "_"
 		tmpLocations = tmpLocations.substring(0, tmpLocations.length()-1);
 		// create cookie data by concatenating session id, version and location string, delimited by "#"
 		String cookieData = this.getSessionID() + "#" + this.getVersionNumber() + "#" + tmpLocations;
-		System.out.println("cookieData: " + cookieData);
+		//System.out.println("cookieData: " + cookieData);
 		return cookieData;
 	}
 	
-	 public void setLocations(List<Server> list) {
-	      locations = list;
-	   }
+	// set the list of server locations to be used for this session
+	public void setLocations(List<Server> list) {
+		locations = list;
+	}
+	
+	// clear the list of locations
+	public void clearLocations() {
+		locations = null;
+	}
+	
+	// add a single server to the list of session locations
+	public void addLocation(Server s) {
+		locations.add(s);
+	}
 	 
-	 public List<Server> getLocations() {
-	      return locations;
-	   }
+	// get the list of server locations used to store this session
+	public List<Server> getLocations() {
+		return locations;
+	}
 }

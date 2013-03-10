@@ -126,9 +126,6 @@ public class rpcClient {
 			byte[] encodedByte = byteEncoder(encodeString);
 
 			// For loop sends the packet to the list of all the servers
-			// NEED A LOCATION FUNCTION IN SESSION CLASS! CONTROLLER
-			// CONSTRUCTIONS LOCATION
-			// BUT DEPENDS ON THE GROUP SENSING FUNCTION!
 			for (Server sNode : s.getLocations()) {
 				DatagramPacket sendPkt = new DatagramPacket(encodedByte,
 						encodedByte.length, sNode.ipAddress, sNode.portNumber);
@@ -153,7 +150,6 @@ public class rpcClient {
 					recBuffer.length);
 
 			// Test that the uniqueID's are equal ergo, this is the same packet
-			// and the server lives
 			try {
 				do {
 					rpcSocket.receive(receivingPacket);
@@ -166,14 +162,12 @@ public class rpcClient {
 			System.out.println("Client received response: "
 					+ byteDecoder(tempByte).split(",")[0]);
 			String[] response = byteDecoder(tempByte).split(",");
-			s.writeData(response[2]); // Not sure this is correct
+			s.setMessage(response[2]); // Not sure this is correct
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Error in sending the packet in checker!");
 			return null;
 		}
-		System.out.println("Server:" + s + " is Online!");
-		// return true;
 		return s;
 	}
 
@@ -197,8 +191,6 @@ public class rpcClient {
 		    byte[] encodedByte = byteEncoder(encodeString);
 		    
 		    //For loop sends the packet to the list of all the servers
-		    //NEED A LOCATION FUNCTION IN SESSION CLASS! CONTROLLER CONSTRUCTIONS LOCATION
-		    //BUT DEPENDS ON THE GROUP SENSING FUNCTION!
 		    for (Server sNode : serverblocks.ServerManager.getServerList()) {
 		        DatagramPacket sendPkt = new DatagramPacket(encodedByte, encodedByte.length, sNode.ipAddress, sNode.portNumber);
 		        try {
@@ -215,7 +207,7 @@ public class rpcClient {
 		 	//byte[] tempByte = new byte[bufferSize];
 		 	DatagramPacket receivingPacket = new DatagramPacket(recBuffer, recBuffer.length);
 		 	
-		 	
+		 	// now we wait for a response from X servers before we consider it done
 		 	do {
 		        try {
 		          rpcSocket.receive(receivingPacket);
@@ -223,7 +215,8 @@ public class rpcClient {
 		          //System.out.println("Put client received:" + response);
 		          if (data.split(",")[0].equals(uniqueID)) {
 		        	  receiveCount++;
-		            //s.addLocation(new Server(recvPkt.getAddress(), recvPkt.getPort()));
+		        	  // add the responding server to the session
+		        	  s.addLocation(new Server(receivingPacket.getAddress(), receivingPacket.getPort()));
 		          }
 		        } catch (IOException e) {
 		          e.printStackTrace();

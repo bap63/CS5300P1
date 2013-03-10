@@ -68,6 +68,7 @@ public class ServerManager extends Thread {
 		}
 	}
 	
+	// add a server to the list, assuming it isn't already there
 	public static void addServer(Server s) {
 		boolean inList = false;
 		for (Server tmpServer : servers) {
@@ -83,6 +84,7 @@ public class ServerManager extends Thread {
 		}
 	}
 	
+	// return the number of servers in the list
 	public static int numServers() {
 		int size = servers.size();
 		return size;

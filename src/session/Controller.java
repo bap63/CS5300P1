@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 
@@ -39,7 +38,6 @@ public class Controller extends HttpServlet {
 	public static Server localserver;
 	public static rpcServer rpcServer;
 	public static ServerManager manager;
-	private static List<Server> servers = new ArrayList<Server>();
 	private String message = "";
 
 	/**
@@ -94,8 +92,6 @@ public class Controller extends HttpServlet {
 		String localSessionID = "";
 		String cookieData = "";
 		Cookie myCookie = null;
-		// get 2 servers from the server manager for session storage (a primary and a backup)
-		servers = ServerManager.getServerList(2);
 		// helps us remember a user's login state
 		boolean userLoggedOut = false;
 
@@ -106,7 +102,7 @@ public class Controller extends HttpServlet {
 			message = "Welcome!";
 			// out.println("Welcome! A new session has been created.");
 			// Creates a new session
-			user.getSession(message, request.getRemoteAddr());
+			user.createSession(request.getRemoteAddr());
 			localSessionID = user.getSessionID();
 			// initialize the new cookie - the real cookie value and exp will be
 			// set later
@@ -123,11 +119,11 @@ public class Controller extends HttpServlet {
 					user.parseCookieData(value);
 					localSessionID = user.getSessionID();
 					// out.println(localSessionID + "<br />");
-					// find the existing session using the ID
-					user.fetchSession(localSessionID);
+					// find the existing session using the ID and version
+					user.getSessionById(localSessionID, user.getVersionNumber());
 					// initialize the message by reading from the session data
 					// store
-					message = user.readData();
+					message = user.getMessage();
 				}
 			}
 		}
@@ -138,10 +134,9 @@ public class Controller extends HttpServlet {
 			// one
 			if (action.equals("Replace")) {
 				message = request.getParameter("message");
-				// log the user out by destroying the cookie;
-				// session data will be removed as part of the normal session
-				// cleanup process
 			} else if (action.equals("Logout") && myCookie != null) {
+				// log the user out by destroying the cookie;
+				// session data will be removed as part of the normal session cleanup process
 				// Set Age To Zero & 'Add' The Cookie Back To The Client For It
 				// To Expire Immediately
 				myCookie.setMaxAge(0);
@@ -158,17 +153,15 @@ public class Controller extends HttpServlet {
 		}
 
 		// unless the user has logged out, we must update the session with the
-		// newest message, incrementing the session version number and
-		// expiration
-		// in the process; then we also update the cookie and its expiration
-		// time
+		// newest message, incrementing the session version number and expiration
+		// in the process; then we also update the cookie and its expiration time
 		if (!userLoggedOut) {
 			// update the session storage
 			user.writeData(message);
 			// always use the session expiration time for the cookie expiration
 			myCookie.setMaxAge(user.getExpTime());
 			// create the data string for the cookie and save it
-			cookieData = user.createCookieData(servers);
+			cookieData = user.createCookieData();
 			myCookie.setValue(cookieData);
 			response.addCookie(myCookie);
 		}

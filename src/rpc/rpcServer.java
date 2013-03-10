@@ -66,7 +66,7 @@ public class rpcServer extends Thread {
 		String uniqueID = splitString[0];
 		int actionType = Integer.parseInt(splitString[1]);
 		String sessionID = splitString[2];
-		String sessionVersion = splitString[3];
+		int sessionVersion = Integer.parseInt(splitString[3]);
 		String response = null;
 		
 		//Manage the response from the String
@@ -75,17 +75,17 @@ public class rpcServer extends Thread {
 			response = uniqueID;
 		}else if(actionType == rpcClient.OPCODE_GET){
 			//GET
-			//Need a way to get a session via uniqueID
+			//get session via uniqueID and version
 			String sID = sessionID;
 			retreivedSession = new session.Session();
-			retreivedSession.fetchSession(sID);
+			retreivedSession.getSessionById(sID, sessionVersion);
 			if(retreivedSession == null){
 				response = "";
 			}else{
 				response = uniqueID;
 				try{
 					//Need a way to pass the data from the retrieved session
-					String rData = retreivedSession.readData();
+					String rData = retreivedSession.getMessage();
 					String rVersion = Integer.toString(retreivedSession.getVersionNumber());
 					response = response + "," + URLEncoder.encode(rVersion,"UTF-8"); //Get Version Number
 					response = response + "," + URLEncoder.encode(rData,"UTF-8"); //Get Data 'Message'
@@ -100,9 +100,10 @@ public class rpcServer extends Thread {
 			try{
 				String sID = sessionID;
 				retreivedSession = new session.Session();
-				retreivedSession.fetchSession(sID);
-				String rData = retreivedSession.readData();
-				//TODO: are we supposed to now store the message data received from the rpc packet into the session? 
+				retreivedSession.getSessionById(sID, sessionVersion);
+				String rData = retreivedSession.getMessage(); 
+				//TODO: aren't we supposed to now store the message data received from the 
+				// rpc packet into the session?
 				//Need a way to add the data from the retrieved session to the string
 				message = URLDecoder.decode(rData,"UTF-8");
 			}catch(UnsupportedEncodingException e){
