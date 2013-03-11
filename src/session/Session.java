@@ -109,16 +109,22 @@ public class Session {
 		}
 		this.setMessage(data);
 		String[] temp = {data, versionNumber.toString(), expires.toString(), String.valueOf(expires.getTime())};
-		sessionTable.put(sessionID, temp);
 		
+		try{
+			sessionTable.put(sessionID, temp);
+		}catch(NullPointerException e){
+			e.printStackTrace();
+			System.out.println("Error in writing to sessionTable:");
+			System.out.println(sessionID + " " + data);
+		}
 		// reset the location list to contain only this server
 		this.clearLocations();
 		//System.out.println(session.Controller.localserver);
 		this.addLocation(session.Controller.localserver);
 
 		//TODO: now we also want to write the data to a backup server using the RPC client
-		//Session tmpSession = rpcClient.put(this);
-		//this.setLocations(tmpSession.getLocations());
+		Session tmpSession = rpcClient.put(this);
+		this.setLocations(tmpSession.getLocations());
 	}
 	
 	// retrieve the message data associated with the current session from the session table

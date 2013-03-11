@@ -220,10 +220,12 @@ public class rpcClient {
 		          }
 		        } catch (IOException e) {
 		          e.printStackTrace();
+		          rpcSocket.close();
 		          return null;
 
 		        }
 		      } while (receiveCount < (lamba * numServers));
+		rpcSocket.close();
 		}catch (IOException e){
 			 e.printStackTrace();
 		}
