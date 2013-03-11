@@ -46,10 +46,10 @@ public class Session {
 		String data = readData();
 		// if nothing is returned, we need to try to get it from another server using the rpc client
 		// TODO: is this right or does this put us into a weird loop?
-		if (data == null) {
-			Session tmpSession = rpcClient.get(this);
-			data = tmpSession.getMessage();
-		}
+		//if (data == null) {
+		//	Session tmpSession = rpcClient.get(this);
+		//	data = tmpSession.getMessage();
+		//}
 		setMessage(data);
 	}
 	
@@ -113,11 +113,12 @@ public class Session {
 		
 		// reset the location list to contain only this server
 		this.clearLocations();
-		this.addLocation(Controller.localserver);
+		//System.out.println(session.Controller.localserver);
+		this.addLocation(session.Controller.localserver);
 
-		// now we also want to write the data to a backup server using the RPC client
-		Session tmpSession = rpcClient.put(this);
-		this.setLocations(tmpSession.getLocations());
+		//TODO: now we also want to write the data to a backup server using the RPC client
+		//Session tmpSession = rpcClient.put(this);
+		//this.setLocations(tmpSession.getLocations());
 	}
 	
 	// retrieve the message data associated with the current session from the session table
@@ -176,7 +177,7 @@ public class Session {
 	
 	// clear the list of locations
 	public void clearLocations() {
-		locations = null;
+		locations.clear();
 	}
 	
 	// add a single server to the list of session locations

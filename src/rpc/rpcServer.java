@@ -134,6 +134,7 @@ public class rpcServer extends Thread {
 				InetAddress ipAddressReturn = receivingPacket.getAddress();
 				int receivingPort = receivingPacket.getPort();
 				// add this server to the list of known servers
+				// TODO: is this correct?
 				Server s = new Server(ipAddressReturn, receivingPort);
 				ServerManager.addServer(s);
 				byte[] tempByte = responseBuilder(receivingPacket.getData(),
