@@ -119,9 +119,12 @@ public class Session {
 		//System.out.println(session.Controller.localserver);
 		this.addLocation(session.Controller.localserver);
 
-		//TODO: now we also want to write the data to a backup server using the RPC client
+		// now we also try to write the data to a backup server using the RPC client
 		Session tmpSession = rpcClient.put(this);
-		this.setLocations(tmpSession.getLocations());
+		if (tmpSession != null) {
+			//System.out.println("tmpSession sid:" + tmpSession.getSessionID() + " v:" + tmpSession.getVersionNumber());
+			this.setLocations(tmpSession.getLocations());
+		}
 	}
 	
 	// retrieve the message data associated with the current session from the session table

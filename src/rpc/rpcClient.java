@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.List;
 //import java.net.URLDecoder;
 import java.util.UUID;
 
@@ -191,7 +192,8 @@ public class rpcClient {
 		    byte[] encodedByte = byteEncoder(encodeString);
 		    
 		    //For loop sends the packet to the list of all the servers
-		    for (Server sNode : serverblocks.ServerManager.getServerList()) {
+		    List<Server> allServers = serverblocks.ServerManager.getServerList();
+		    for (Server sNode : allServers) {
 		        DatagramPacket sendPkt = new DatagramPacket(encodedByte, encodedByte.length, sNode.ipAddress, sNode.portNumber);
 		        try {
 		          rpcSocket.send(sendPkt);
@@ -224,10 +226,10 @@ public class rpcClient {
 		          return null;
 
 		        }
-		      } while (receiveCount < (lamba * numServers));
-		rpcSocket.close();
+		 	} while (receiveCount < (lamba * numServers));
+		 	rpcSocket.close();
 		}catch (IOException e){
-			 e.printStackTrace();
+			e.printStackTrace();
 		}
 		System.out.println("Client finished put");
 	    return s;

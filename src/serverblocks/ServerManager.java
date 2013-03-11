@@ -12,7 +12,7 @@ public class ServerManager extends Thread {
 	public static final int checkRate = 10; // How often should we probe servers
 	private Random x = new Random();										// in seconds
 	public static boolean simulateCrashOff = true;
-	private Vector<Server> servers = new Vector<Server>();
+	private static Vector<Server> servers = new Vector<Server>();
 	private Server currentServer;
 
 	// Insert a server\
