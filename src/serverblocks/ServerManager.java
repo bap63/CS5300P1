@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Vector;
 
 import rpc.rpcClient;
 
@@ -11,7 +12,7 @@ public class ServerManager extends Thread {
 	public static final int checkRate = 10; // How often should we probe servers
 	private Random x = new Random();										// in seconds
 	public static boolean simulateCrashOff = true;
-	private static List<Server> servers = new ArrayList<Server>();
+	private Vector<Server> servers = new Vector<Server>();
 	private Server currentServer;
 
 	// Insert a server\
