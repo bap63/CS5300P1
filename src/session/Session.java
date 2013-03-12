@@ -2,7 +2,9 @@ package session;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Vector;
 import serverblocks.*;
 import rpc.rpcClient;
@@ -15,7 +17,9 @@ public class Session {
 	private String message = "";
 	protected static ConcurrentHashMap<String, String[]> sessionTable = new ConcurrentHashMap<String, String[]>();
 	private static int expTime = 600;  // session expiration time in seconds, i.e. 10 min
-	private Vector<Server> locations = new Vector<Server>();
+	//private Vector<Server> locations = new Vector<Server>();
+	private List<Server> locations = new CopyOnWriteArrayList<Server>();
+	
 	/**Creates session object*/
 	public Session() {
 		// set the default session expiration and version #
@@ -177,7 +181,7 @@ public class Session {
 	}
 	
 	// set the list of server locations to be used for this session
-	public void setLocations(Vector<Server> list) {
+	public void setLocations(List<Server> list) {
 		locations = list;
 	}
 	
@@ -192,7 +196,7 @@ public class Session {
 	}
 	 
 	// get the list of server locations used to store this session
-	public Vector<Server> getLocations() {
+	public List<Server> getLocations() {
 		return locations;
 	}
 }

@@ -1,10 +1,11 @@
 package serverblocks;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Vector;
+//import java.util.Vector;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import rpc.rpcClient;
 
@@ -12,7 +13,8 @@ public class ServerManager extends Thread {
 	public static final int checkRate = 10; // How often should we probe servers
 	private Random x = new Random();										// in seconds
 	public static boolean simulateCrashOff = true;
-	private static Vector<Server> servers = new Vector<Server>();
+	//private static Vector<Server> servers = new Vector<Server>();
+	private static List<Server> servers = new CopyOnWriteArrayList<Server>();
 	private Server currentServer;
 
 	// Insert a server\
