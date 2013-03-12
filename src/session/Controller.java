@@ -159,7 +159,7 @@ public class Controller extends HttpServlet {
 			// update the session storage
 			user.writeData(message);
 			// always use the session expiration time for the cookie expiration
-			myCookie.setMaxAge(user.getExpTime());
+			myCookie.setMaxAge(600);
 			// create the data string for the cookie and save it
 			cookieData = user.createCookieData();
 			myCookie.setValue(cookieData);

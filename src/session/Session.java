@@ -47,10 +47,10 @@ public class Session {
 		String data = readData();
 		// if nothing is returned, we need to try to get it from another server using the rpc client
 		// TODO: is this right or does this put us into a weird loop?
-		//if (data == null) {
-		//	Session tmpSession = rpcClient.get(this);
-		//	data = tmpSession.getMessage();
-		//}
+		if (data == null) {
+			Session tmpSession = rpcClient.get(this);
+			data = tmpSession.getMessage();
+		}
 		setMessage(data);
 	}
 	
@@ -129,6 +129,23 @@ public class Session {
 			//System.out.println("tmpSession sid:" + tmpSession.getSessionID() + " v:" + tmpSession.getVersionNumber());
 			this.setLocations(tmpSession.getLocations());
 		}
+	}
+	/*Static Write method*/
+	public static void injectData(String sID,int vr,String data){
+	   //Sets expiration time stamp
+	   Timestamp exp = new Timestamp(0);
+	   Timestamp stamp = new Timestamp(new Date().getTime());
+	   exp.setTime(stamp.getTime() + (expTime * 1000));
+	   //Constructs string data , version number, expiration (string), expiration (timestamp)
+	   String[] temp = {data, Integer.toString(vr), exp.toString(), String.valueOf(exp.getTime())};
+	   try{
+			sessionTable.put(sID, temp);
+		}catch(NullPointerException e){
+			e.printStackTrace();
+			System.out.println("Error in injecting to sessionTable:");
+			System.out.println(sID + " " + data);
+		}
+		
 	}
 	
 	// retrieve the message data associated with the current session from the session table

@@ -188,7 +188,7 @@ public class rpcClient {
 			String uniqueID = UUID.randomUUID().toString();
 			
 			//Encode string for packet sending
-			String encodeString = (uniqueID + "," + OPCODE_PUT + s.getSessionID() + s.getVersionNumber());
+			String encodeString = (uniqueID + "," + OPCODE_PUT + "," + s.getSessionID() + "," + s.getVersionNumber() + "," + s.readData());
 		    byte[] encodedByte = byteEncoder(encodeString);
 		    
 		    //For loop sends the packet to the list of all the servers

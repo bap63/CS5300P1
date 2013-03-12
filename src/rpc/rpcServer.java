@@ -67,6 +67,10 @@ public class rpcServer extends Thread {
 		int actionType = Integer.parseInt(splitString[1]);
 		String sessionID = splitString[2];
 		int sessionVersion = Integer.parseInt(splitString[3]);
+		String message = "";
+		try{
+			message = splitString[4];
+		}catch(ArrayIndexOutOfBoundsException e){}
 		String response = null;
 		
 		//Manage the response from the String
@@ -79,7 +83,7 @@ public class rpcServer extends Thread {
 			String sID = sessionID;
 			retreivedSession = new session.Session();
 			retreivedSession.getSessionById(sID, sessionVersion);
-			if(retreivedSession == null){
+			if(retreivedSession.getMessage() == null){
 				response = "";
 			}else{
 				response = uniqueID;
@@ -96,21 +100,7 @@ public class rpcServer extends Thread {
 			}
 		}else if(actionType == rpcClient.OPCODE_PUT){
 			//PUT
-			String message = null;
-			try{
-				String sID = sessionID;
-				retreivedSession = new session.Session();
-				retreivedSession.getSessionById(sID, sessionVersion);
-				String rData = retreivedSession.getMessage(); 
-				//TODO: aren't we supposed to now store the message data received from the 
-				// rpc packet into the session?
-				//Need a way to add the data from the retrieved session to the string
-				message = URLDecoder.decode(rData,"UTF-8");
-			}catch(UnsupportedEncodingException e){
-				e.printStackTrace();
-				System.out.println("rpcServer Response Builder PUT");
-			}
-			//putTheSession
+			session.Session.injectData(sessionID, sessionVersion, message);
 			response = uniqueID;
 		}
 		returnedData = rpcClient.byteEncoder(response);
