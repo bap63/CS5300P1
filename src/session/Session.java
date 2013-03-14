@@ -41,15 +41,20 @@ public class Session {
 		setExpires();
 		setSessionID(sID);
 		setVersionNumber(v);
-		// TODO: I think we need to use the list of locations to try to get the data, rather than
-		// assuming it's stored locally
-		// get the message from the data store
-		String data = readData();
-		// if nothing is returned, we need to try to get it from another server using the rpc client
-		// TODO: is this right or does this put us into a weird loop?
+		String data = null;
+		// if the local server is one of the servers, just read the data from the local session store
+		System.out.println(this.locationsToString());
+		System.out.println(Controller.localserver.toString());
+		if (ServerManager.inServerList(Controller.localserver, this.getLocations())) {
+			data = readData();
+		}
+		// use the rpcClient get function to get the data from one of the locations that was
+		// stored in the cookie
 		if (data == null) {
 			Session tmpSession = rpcClient.get(this);
-			data = tmpSession.getMessage();
+			if (tmpSession != null) {
+				data = tmpSession.getMessage();
+			}
 		}
 		setMessage(data);
 	}
@@ -105,7 +110,7 @@ public class Session {
 	// increment version number and store current data in session table
 	public void writeData(String data){
 		versionNumber++;
-		if(data.length() > 256){
+		if(data != null && data.length() > 256){
 			data = data.substring(0,256);
 		}
 		this.setMessage(data);
@@ -124,6 +129,8 @@ public class Session {
 		this.addLocation(session.Controller.localserver);
 
 		// now we also try to write the data to a backup server using the RPC client
+		// TODO: make sure this still works after we have multiple servers 
+		//       - right now it is using the same sever as primary and backup
 		Session tmpSession = rpcClient.put(this);
 		if (tmpSession != null) {
 			//System.out.println("tmpSession sid:" + tmpSession.getSessionID() + " v:" + tmpSession.getVersionNumber());
@@ -184,15 +191,8 @@ public class Session {
 	
 	// create the data string to be stored in the cookie
 	public String createCookieData() {
-		String tmpLocations = "";
-		// convert the servers into a string delimited by "_"
-		for (Server s : this.getLocations()) {
-			tmpLocations += s.toString() + "_";
-		}
-		// remove trailing "_"
-		tmpLocations = tmpLocations.substring(0, tmpLocations.length()-1);
 		// create cookie data by concatenating session id, version and location string, delimited by "#"
-		String cookieData = this.getSessionID() + "#" + this.getVersionNumber() + "#" + tmpLocations;
+		String cookieData = this.getSessionID() + "#" + this.getVersionNumber() + "#" + this.locationsToString();
 		//System.out.println("cookieData: " + cookieData);
 		return cookieData;
 	}
@@ -215,5 +215,16 @@ public class Session {
 	// get the list of server locations used to store this session
 	public List<Server> getLocations() {
 		return locations;
+	}
+	
+	public String locationsToString() {
+		String tmpLocations = "";
+		// convert the servers into a string delimited by "_"
+		for (Server s : this.getLocations()) {
+			tmpLocations += s.toString() + "_";
+		}
+		// remove trailing "_"
+		tmpLocations = tmpLocations.substring(0, tmpLocations.length()-1);
+		return tmpLocations;
 	}
 }

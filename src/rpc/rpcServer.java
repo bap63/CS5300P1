@@ -15,6 +15,7 @@ import serverblocks.*;
 public class rpcServer extends Thread {
 	protected static boolean simulateCrashOff = true;
 	private static int bufferSize = 512;
+	private static int rpcSenderPort;
 
 	DatagramSocket rpcSocket;
 	int portNumberServer = 0;
@@ -56,7 +57,7 @@ public class rpcServer extends Thread {
 		Session retreivedSession;
 		byte[] returnedData = null;
 		String requestedString = rpcClient.byteDecoder(data);
-		String[] splitString = requestedString.split(",");
+		String[] splitString = requestedString.split("_");
 		if (splitString.length < 4){
 			return null;
 		}
@@ -67,9 +68,10 @@ public class rpcServer extends Thread {
 		int actionType = Integer.parseInt(splitString[1]);
 		String sessionID = splitString[2];
 		int sessionVersion = Integer.parseInt(splitString[3]);
+		rpcSenderPort = Integer.parseInt(splitString[4]);
 		String message = "";
 		try{
-			message = splitString[4];
+			message = splitString[5];
 		}catch(ArrayIndexOutOfBoundsException e){}
 		String response = null;
 		
@@ -88,11 +90,12 @@ public class rpcServer extends Thread {
 			}else{
 				response = uniqueID;
 				try{
-					//Need a way to pass the data from the retrieved session
+					// pass the data back from the retrieved session
 					String rData = retreivedSession.getMessage();
 					String rVersion = Integer.toString(retreivedSession.getVersionNumber());
-					response = response + "," + URLEncoder.encode(rVersion,"UTF-8"); //Get Version Number
-					response = response + "," + URLEncoder.encode(rData,"UTF-8"); //Get Data 'Message'
+					//TODO: do we really need/want to urlencode these?
+					response = response + "_" + URLEncoder.encode(rVersion,"UTF-8"); //Get Version Number
+					response = response + "_" + URLEncoder.encode(rData,"UTF-8"); //Get Data 'Message'
 				} catch (UnsupportedEncodingException e){
 					e.printStackTrace();
 					System.out.println("rpcServer Response Builder GET");
@@ -124,8 +127,9 @@ public class rpcServer extends Thread {
 				InetAddress ipAddressReturn = receivingPacket.getAddress();
 				int receivingPort = receivingPacket.getPort();
 				// add this server to the list of known servers
-				// TODO: is this correct?
-				Server s = new Server(ipAddressReturn, receivingPort);
+				// TODO: is this correct per 3.8a in the assignment?
+				//Server s = new Server(ipAddressReturn, receivingPort);
+				Server s = new Server(ipAddressReturn, rpcSenderPort);
 				ServerManager.addServer(s);
 				byte[] tempByte = responseBuilder(receivingPacket.getData(),
 						receivingPacket.getLength());

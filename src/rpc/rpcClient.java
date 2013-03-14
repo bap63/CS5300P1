@@ -19,7 +19,7 @@ import session.*;
 
 import serverblocks.Server;
 
-/*operationSESSIONREAD Codes:
+/*operation Codes:
  * 0: Probe
  * 1: Get
  * 2: Put
@@ -31,7 +31,8 @@ public class rpcClient {
 	public static int OPCODE_GET = 1;
 	public static int OPCODE_PUT = 2;
 	private static int bufferSize = 512;
-	private static final double lamba = 1.0;
+	private static final int numServers = 1;
+	//private static final double lamba = 1.0;
 	//private static final double ro = 2.0;
 
 	// Converts a string to a byte array for UDP Packaging
@@ -76,7 +77,8 @@ public class rpcClient {
 			String uniqueID = UUID.randomUUID().toString();
 
 			// Encode string for packet sending
-			String encodeString = (uniqueID + "," + OPCODE_PROBE + ",0,0");
+			//String encodeString = (uniqueID + "," + OPCODE_PROBE + ",0,0," + Controller.localport);
+			String encodeString = encodeStringForPacket(uniqueID, OPCODE_PROBE, null);
 			byte[] encodedByte = byteEncoder(encodeString);
 
 			rpcPacket = new DatagramPacket(encodedByte, encodedByte.length,
@@ -96,7 +98,7 @@ public class rpcClient {
 				do {
 					rpcSocket.receive(receivingPacket);
 					tempByte = receivingPacket.getData();
-				} while (!(byteDecoder(tempByte).split(",")[0].equals(uniqueID)));
+				} while (!(byteDecoder(tempByte).split("_")[0].equals(uniqueID)));
 			} catch (SocketException e) {
 				e.printStackTrace();
 			}
@@ -122,8 +124,9 @@ public class rpcClient {
 			String uniqueID = UUID.randomUUID().toString();
 
 			// Encode string for packet sending
-			String encodeString = (uniqueID + "," + OPCODE_GET + ","
-					+ s.getSessionID() + "," + s.getVersionNumber());
+			String encodeString = encodeStringForPacket(uniqueID, OPCODE_GET, s);
+			//String encodeString = (uniqueID + "," + OPCODE_GET + ","
+			//		+ s.getSessionID() + "," + s.getVersionNumber());
 			byte[] encodedByte = byteEncoder(encodeString);
 
 			// For loop sends the packet to the list of all the servers
@@ -155,14 +158,15 @@ public class rpcClient {
 				do {
 					rpcSocket.receive(receivingPacket);
 					tempByte = receivingPacket.getData();
-				} while (!(byteDecoder(tempByte).split(",")[0].equals(uniqueID))
+				} while (!(byteDecoder(tempByte).split("_")[0].equals(uniqueID))
 						|| tempByte == null);
 			} catch (SocketException e) {
 				e.printStackTrace();
 			}
 			System.out.println("Client received response: "
-					+ byteDecoder(tempByte).split(",")[0]);
-			String[] response = byteDecoder(tempByte).split(",");
+					+ byteDecoder(tempByte).split("_")[0]);
+			String[] response = byteDecoder(tempByte).split("_");
+			//TODO: make sure we really want to do this
 			s.setMessage(response[2]); // Not sure this is correct
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -175,11 +179,9 @@ public class rpcClient {
 	// Code 2: Put
 	public static Session put(session.Session s){
 		System.out.println("PUTTING to Session: " + s);
-		int numServers = serverblocks.ServerManager.numServers();
 		DatagramSocket rpcSocket;
 		//DatagramPacket rpcPacket;
 		try{
-			//NEED Number of servers
 			
 			rpcSocket = new DatagramSocket();
 			rpcSocket.setSoTimeout(TIMEOUT);
@@ -187,9 +189,11 @@ public class rpcClient {
 			//Generate Unique ID
 			String uniqueID = UUID.randomUUID().toString();
 			
-			//Encode string for packet sending
-			String encodeString = (uniqueID + "," + OPCODE_PUT + "," + s.getSessionID() + "," + s.getVersionNumber() + "," + s.readData());
-		    byte[] encodedByte = byteEncoder(encodeString);
+			// Encode string for packet sending
+			String encodeString = encodeStringForPacket(uniqueID, OPCODE_PUT, s);
+			//String encodeString = (uniqueID + "," + OPCODE_PUT + "," + s.getSessionID() + "," + s.getVersionNumber() + "," + s.readData());
+		    
+			byte[] encodedByte = byteEncoder(encodeString);
 		    
 		    //For loop sends the packet to the list of all the servers
 		    List<Server> allServers = serverblocks.ServerManager.getServerList();
@@ -207,18 +211,19 @@ public class rpcClient {
 		    // !------------------RECEIVE PACKET---------------//
 		    byte[] recBuffer = new byte[bufferSize];
 		 	//byte[] tempByte = new byte[bufferSize];
-		 	DatagramPacket receivingPacket = new DatagramPacket(recBuffer, recBuffer.length);
+		 	DatagramPacket recPacket = new DatagramPacket(recBuffer, recBuffer.length);
 		 	
-		 	// now we wait for a response from X servers before we consider it done
+		 	// now we wait for a response from numServers servers before we consider it done
 		 	do {
 		        try {
-		          rpcSocket.receive(receivingPacket);
+		          rpcSocket.receive(recPacket);
 		          String data = byteDecoder(recBuffer);
 		          //System.out.println("Put client received:" + response);
-		          if (data.split(",")[0].equals(uniqueID)) {
+		          if (data.split("_")[0].equals(uniqueID)) {
 		        	  receiveCount++;
 		        	  // add the responding server to the session
-		        	  s.addLocation(new Server(receivingPacket.getAddress(), receivingPacket.getPort()));
+		        	  //TODO: is this correct based on 3.8a in the assignment?
+		        	  s.addLocation(new Server(recPacket.getAddress(), recPacket.getPort()));
 		          }
 		        } catch (IOException e) {
 		          e.printStackTrace();
@@ -226,12 +231,31 @@ public class rpcClient {
 		          return null;
 
 		        }
-		 	} while (receiveCount < (lamba * numServers));
+		 	} while (receiveCount < numServers);
 		 	rpcSocket.close();
 		}catch (IOException e){
 			e.printStackTrace();
 		}
 		System.out.println("Client finished put");
 	    return s;
+	}
+	
+	// construct the packet for the given opCode type
+	public static String encodeStringForPacket(String uniqueID, int opCode, Session s) {
+		String sessionID = "0";
+		String sessionVersion = "0";
+		String message = "";
+		if (s != null) {
+			sessionID = s.getSessionID();
+			sessionVersion = Integer.toString(s.getVersionNumber());
+			if (opCode == OPCODE_PUT) {
+				message = s.getMessage();
+			}
+		}
+
+		String encodeString = (uniqueID + "_" + opCode + "_" + sessionID + "_" + 
+				sessionVersion + "_" + Controller.localport + "_" + message);
+		return encodeString;
+		
 	}
 }

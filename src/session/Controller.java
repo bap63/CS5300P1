@@ -36,6 +36,7 @@ public class Controller extends HttpServlet {
 	private static String cookieName = "CS5300PROJ1SESSION";
 
 	public static Server localserver;
+	public static int localport;
 	public static rpcServer rpcServer;
 	public static ServerManager manager;
 	private String message = "";
@@ -51,8 +52,8 @@ public class Controller extends HttpServlet {
 		new Thread(rpcServer).start();
 		
 		try{
-			localserver = new Server(InetAddress.getLocalHost(), rpcServer.getPort());
-			
+			localport = rpcServer.getPort();
+			localserver = new Server(InetAddress.getLocalHost(), localport);			
 			//Start Group Membership
 			manager = new ServerManager(localserver);
 			new Thread(manager).start();

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 //import java.util.Vector;
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import rpc.rpcClient;
@@ -71,18 +70,21 @@ public class ServerManager extends Thread {
 		}
 	}
 	
-	// add a server to the list, assuming it isn't already there
-	public static void addServer(Server s) {
-		boolean inList = false;
-		for (Server tmpServer : servers) {
-			//System.out.println("s:" + s.toString() + " tmpServer:" + tmpServer.toString());
+	// returns true if the given server already exists in the given list of servers
+	public static boolean inServerList(Server s, List<Server> serverList) {
+		for (Server tmpServer : serverList) {
+			System.out.println("s:" + s.toString() + " tmpServer:" + tmpServer.toString());
 			if (tmpServer.equals(s)) {
-				inList = true;
-				//System.out.println("Equal!");
-				break;
+				System.out.println("Matched!");
+				return true;
 			}
 		}
-		if (! inList) {
+		return false;
+	}
+	
+	// add a server to the list, assuming it isn't already there
+	public static void addServer(Server s) {
+		if (! inServerList(s, servers)) {
 			servers.add(s);
 		}
 	}
