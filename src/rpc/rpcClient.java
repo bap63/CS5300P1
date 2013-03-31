@@ -30,10 +30,8 @@ public class rpcClient {
 	public static int OPCODE_PROBE = 0;
 	public static int OPCODE_GET = 1;
 	public static int OPCODE_PUT = 2;
-	private static int bufferSize = 512;
+	private static int bufferSize = 4096;
 	private static final int numServers = 1;
-	//private static final double lamba = 1.0;
-	//private static final double ro = 2.0;
 
 	// Converts a string to a byte array for UDP Packaging
 	public static byte[] byteEncoder(String s) {
@@ -80,34 +78,40 @@ public class rpcClient {
 			//String encodeString = (uniqueID + "," + OPCODE_PROBE + ",0,0," + Controller.localport);
 			String encodeString = encodeStringForPacket(uniqueID, OPCODE_PROBE, null);
 			byte[] encodedByte = byteEncoder(encodeString);
+			
+			// set up receive packet
+			byte[] recBuffer = new byte[bufferSize];
+			byte[] tempByte = new byte[bufferSize];
+			DatagramPacket recPacket = new DatagramPacket(recBuffer,
+					recBuffer.length);
 
+			// send the packet to the given server
 			rpcPacket = new DatagramPacket(encodedByte, encodedByte.length,
 					s.ipAddress, s.portNumber);
 			rpcSocket.send(rpcPacket);
-			System.out.println("Sent packet: " + rpcPacket.toString());
+			System.out.println("rpcClient checker : Sent : " + encodeString);
 
-			// !------------------RECEIVE PACKET---------------//
-			byte[] recBuffer = new byte[bufferSize];
-			byte[] tempByte = new byte[bufferSize];
-			DatagramPacket receivingPacket = new DatagramPacket(recBuffer,
-					recBuffer.length);
-
-			// Test that the uniqueID's are equal ergo, this is the same packet
+			// receive a packet back; test that the uniqueID's are equal ergo, this is the same packet
 			// and the server lives
+			String recID = "";
 			try {
 				do {
-					rpcSocket.receive(receivingPacket);
-					tempByte = receivingPacket.getData();
-				} while (!(byteDecoder(tempByte).split("_")[0].equals(uniqueID)));
+					rpcSocket.receive(recPacket);
+					tempByte = recPacket.getData();
+					recID = byteDecoder(tempByte).split("_")[0];
+					System.out.println("rpcClient checker : received " + recID);
+				} while (! recID.equals(uniqueID));
 			} catch (SocketException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
+				System.out.println("rpcClient checker : SocketException on server " + s);
+				return false;
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Error in sending the packet in checker!");
+			//e.printStackTrace();
+			System.out.println("rpcClient checker : IOException on server " + s);
 			return false;
 		}
-		System.out.println("Server:" + s + " is Online!");
+		System.out.println("rpcClient checker : Server:" + s + " is Online!");
 		return true;
 	}
 
@@ -128,17 +132,21 @@ public class rpcClient {
 			//String encodeString = (uniqueID + "," + OPCODE_GET + ","
 			//		+ s.getSessionID() + "," + s.getVersionNumber());
 			byte[] encodedByte = byteEncoder(encodeString);
+			System.out.println("rpc get : Sending string " + encodeString);
 
 			// For loop sends the packet to the list of all the servers
 			for (Server sNode : s.getLocations()) {
+		        if (sNode.equals(Controller.localserver)) {
+		        	continue;
+		        }
 				DatagramPacket sendPkt = new DatagramPacket(encodedByte,
 						encodedByte.length, sNode.ipAddress, sNode.portNumber);
+				System.out.println("rpcClient get : Sending to Server: " + sNode.toString());
 				try {
 					rpcSocket.send(sendPkt);
-					System.out.println("Sent packet: " + sendPkt.toString()
-							+ "@ Server: " + sNode.toString());
 				} catch (IOException e) {
-					e.printStackTrace();
+					//e.printStackTrace();
+					System.out.println("rpcClient get : IOException Error in sending the packet to " + sNode.toString());
 				}
 			}
 
@@ -150,27 +158,25 @@ public class rpcClient {
 			// !------------------RECEIVE PACKET---------------//
 			byte[] recBuffer = new byte[bufferSize];
 			byte[] tempByte = new byte[bufferSize];
-			DatagramPacket receivingPacket = new DatagramPacket(recBuffer,
-					recBuffer.length);
+			DatagramPacket recPacket = new DatagramPacket(recBuffer, recBuffer.length);
 
 			// Test that the uniqueID's are equal ergo, this is the same packet
 			try {
 				do {
-					rpcSocket.receive(receivingPacket);
-					tempByte = receivingPacket.getData();
+					rpcSocket.receive(recPacket);
+					tempByte = recPacket.getData();
 				} while (!(byteDecoder(tempByte).split("_")[0].equals(uniqueID))
 						|| tempByte == null);
 			} catch (SocketException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
+				System.out.println("rpcClient get : SocketException Error in receiving the packet");
 			}
-			System.out.println("Client received response: "
-					+ byteDecoder(tempByte).split("_")[0]);
 			String[] response = byteDecoder(tempByte).split("_");
-			//TODO: make sure we really want to do this
-			s.setMessage(response[2]); // Not sure this is correct
+			System.out.println("rpcClient get : received data: " + response[2]);
+			s.setMessage(response[2]);
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Error in sending the packet in checker!");
+			//e.printStackTrace();
+			System.out.println("rpcClient get : IOException Error in sending the packet");
 			return null;
 		}
 		return s;
@@ -194,16 +200,22 @@ public class rpcClient {
 			//String encodeString = (uniqueID + "," + OPCODE_PUT + "," + s.getSessionID() + "," + s.getVersionNumber() + "," + s.readData());
 		    
 			byte[] encodedByte = byteEncoder(encodeString);
+			System.out.println("rpcClient put : Sending string " + encodeString);
 		    
 		    //For loop sends the packet to the list of all the servers
 		    List<Server> allServers = serverblocks.ServerManager.getServerList();
 		    for (Server sNode : allServers) {
-		        DatagramPacket sendPkt = new DatagramPacket(encodedByte, encodedByte.length, sNode.ipAddress, sNode.portNumber);
+		        if (sNode.equals(Controller.localserver)) {
+		        	//System.out.println("rpcClient put : Skipping localserver");
+		        	continue;
+		        }
+		    	DatagramPacket sendPkt = new DatagramPacket(encodedByte, encodedByte.length, sNode.ipAddress, sNode.portNumber);
+		        System.out.println("rpcClient put : Sending to Server: " + sNode.toString());
 		        try {
 		          rpcSocket.send(sendPkt);
-		          System.out.println("Sent packet: " + sendPkt.toString() + "@ Server: " + sNode.toString());
 		        } catch (IOException e) {
-		          e.printStackTrace();
+		        	System.out.println("rpcClient put : IOException Error in sending the packet to " + sNode.toString());
+		          //e.printStackTrace();
 		        }
 		    }
 		    
@@ -218,7 +230,7 @@ public class rpcClient {
 		        try {
 		          rpcSocket.receive(recPacket);
 		          String data = byteDecoder(recBuffer);
-		          //System.out.println("Put client received:" + response);
+		          System.out.println("rpcClient put : received:" + data);
 		          if (data.split("_")[0].equals(uniqueID)) {
 		        	  receiveCount++;
 		        	  // add the responding server to the session
@@ -226,7 +238,8 @@ public class rpcClient {
 		        	  s.addLocation(new Server(recPacket.getAddress(), recPacket.getPort()));
 		          }
 		        } catch (IOException e) {
-		          e.printStackTrace();
+		          //e.printStackTrace();
+		        	System.out.println("rpcClient put : IOException Error in receiving the packet");
 		          rpcSocket.close();
 		          return null;
 
@@ -234,9 +247,10 @@ public class rpcClient {
 		 	} while (receiveCount < numServers);
 		 	rpcSocket.close();
 		}catch (IOException e){
-			e.printStackTrace();
+			//e.printStackTrace();
+        	System.out.println("rpcClient put : IOException Error in sending the packet");
 		}
-		System.out.println("Client finished put");
+		System.out.println("rpcClient finished put");
 	    return s;
 	}
 	

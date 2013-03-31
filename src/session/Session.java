@@ -43,14 +43,16 @@ public class Session {
 		setVersionNumber(v);
 		String data = null;
 		// if the local server is one of the servers, just read the data from the local session store
-		System.out.println(this.locationsToString());
-		System.out.println(Controller.localserver.toString());
+		//System.out.println(this.locationsToString());
+		//System.out.println(Controller.localserver.toString());
 		if (ServerManager.inServerList(Controller.localserver, this.getLocations())) {
+			System.out.println("getSessionById: reading data for sID " + sID + " from localhost");
 			data = readData();
 		}
 		// use the rpcClient get function to get the data from one of the locations that was
 		// stored in the cookie
 		if (data == null) {
+			System.out.println("getSessionById: reading data for sID " + sID + " from rpcClient get");
 			Session tmpSession = rpcClient.get(this);
 			if (tmpSession != null) {
 				data = tmpSession.getMessage();
@@ -133,7 +135,7 @@ public class Session {
 		//       - right now it is using the same sever as primary and backup
 		Session tmpSession = rpcClient.put(this);
 		if (tmpSession != null) {
-			//System.out.println("tmpSession sid:" + tmpSession.getSessionID() + " v:" + tmpSession.getVersionNumber());
+			System.out.println("tmpSession sid:" + tmpSession.getSessionID() + " v:" + tmpSession.getVersionNumber());
 			this.setLocations(tmpSession.getLocations());
 		}
 	}
@@ -224,7 +226,9 @@ public class Session {
 			tmpLocations += s.toString() + "_";
 		}
 		// remove trailing "_"
-		tmpLocations = tmpLocations.substring(0, tmpLocations.length()-1);
+		if (tmpLocations != "") {
+			tmpLocations = tmpLocations.substring(0, tmpLocations.length()-1);
+		}
 		return tmpLocations;
 	}
 }

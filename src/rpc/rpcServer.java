@@ -1,21 +1,18 @@
 package rpc;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 
 import session.Session;
 import serverblocks.*;
 
 public class rpcServer extends Thread {
 	protected static boolean simulateCrashOff = true;
-	private static int bufferSize = 512;
-	private static int rpcSenderPort;
+	private static int bufferSize = 4096;
+	private static int rpcSenderServerPort;
 
 	DatagramSocket rpcSocket;
 	int portNumberServer = 0;
@@ -24,6 +21,7 @@ public class rpcServer extends Thread {
 		try {
 			rpcSocket = new DatagramSocket();
 			portNumberServer = rpcSocket.getLocalPort();
+			System.out.println("rpc server running on port " + portNumberServer);
 		} catch (SocketException e) {
 			e.printStackTrace();
 			System.out.println("rpcServer Default Constructor");
@@ -53,11 +51,12 @@ public class rpcServer extends Thread {
 	 * 
 	 * This function
 	 */
-	private byte[] responseBuilder(byte[] data, int packetLength){
+	private byte[] responseBuilder(byte[] data) {
 		Session retreivedSession;
 		byte[] returnedData = null;
-		String requestedString = rpcClient.byteDecoder(data);
-		String[] splitString = requestedString.split("_");
+		String requestString = rpcClient.byteDecoder(data);
+		System.out.println("rpc server : received request " + requestString);
+		String[] splitString = requestString.split("_");
 		if (splitString.length < 4){
 			return null;
 		}
@@ -68,7 +67,7 @@ public class rpcServer extends Thread {
 		int actionType = Integer.parseInt(splitString[1]);
 		String sessionID = splitString[2];
 		int sessionVersion = Integer.parseInt(splitString[3]);
-		rpcSenderPort = Integer.parseInt(splitString[4]);
+		rpcSenderServerPort = Integer.parseInt(splitString[4]);
 		String message = "";
 		try{
 			message = splitString[5];
@@ -82,30 +81,34 @@ public class rpcServer extends Thread {
 		}else if(actionType == rpcClient.OPCODE_GET){
 			//GET
 			//get session via uniqueID and version
-			String sID = sessionID;
 			retreivedSession = new session.Session();
-			retreivedSession.getSessionById(sID, sessionVersion);
+			retreivedSession.getSessionById(sessionID, sessionVersion);
 			if(retreivedSession.getMessage() == null){
 				response = "";
+				System.out.println("rpcServer GET - session " + sessionID + " was not found");
 			}else{
 				response = uniqueID;
-				try{
+				//try{
 					// pass the data back from the retrieved session
 					String rData = retreivedSession.getMessage();
 					String rVersion = Integer.toString(retreivedSession.getVersionNumber());
 					//TODO: do we really need/want to urlencode these?
-					response = response + "_" + URLEncoder.encode(rVersion,"UTF-8"); //Get Version Number
-					response = response + "_" + URLEncoder.encode(rData,"UTF-8"); //Get Data 'Message'
-				} catch (UnsupportedEncodingException e){
-					e.printStackTrace();
-					System.out.println("rpcServer Response Builder GET");
-				}
+					//response = response + "_" + URLEncoder.encode(rVersion,"UTF-8"); //Get Version Number
+					//response = response + "_" + URLEncoder.encode(rData,"UTF-8"); //Get Data 'Message'
+					response = response + "_" + rVersion; //Get Version Number
+					response = response + "_" + rData; //Get Data 'Message'
+					System.out.println("rpcServer GET - returning data " + response);
+				//} catch (UnsupportedEncodingException e){
+				//	e.printStackTrace();
+				//	System.out.println("rpcServer Response Builder GET");
+				//}
 			}
 		}else if(actionType == rpcClient.OPCODE_PUT){
 			//PUT
 			session.Session.injectData(sessionID, sessionVersion, message);
 			response = uniqueID;
 		}
+		System.out.println("rpc server : returning response " + response);
 		returnedData = rpcClient.byteEncoder(response);
 		return returnedData;
 	}
@@ -120,25 +123,24 @@ public class rpcServer extends Thread {
 	public void run() {
 		while (simulateCrashOff) {
 			byte[] recBuffer = new byte[bufferSize];
-			DatagramPacket receivingPacket = new DatagramPacket(recBuffer,
-					recBuffer.length);
+			DatagramPacket recPacket = new DatagramPacket(recBuffer, recBuffer.length);
 			try {
-				rpcSocket.receive(receivingPacket);
-				InetAddress ipAddressReturn = receivingPacket.getAddress();
-				int receivingPort = receivingPacket.getPort();
+				rpcSocket.receive(recPacket);
+				InetAddress returnAddress = recPacket.getAddress();
+				int returnPort = recPacket.getPort();
 				// add this server to the list of known servers
-				// TODO: is this correct per 3.8a in the assignment?
-				//Server s = new Server(ipAddressReturn, receivingPort);
-				Server s = new Server(ipAddressReturn, rpcSenderPort);
+				// TODO: which one is correct per 3.8a in the assignment?
+				//Server s = new Server(returnAddress, returnPort);
+				//ServerManager.addServer(s);
+				Server s = new Server(returnAddress, rpcSenderServerPort);
 				ServerManager.addServer(s);
-				byte[] tempByte = responseBuilder(receivingPacket.getData(),
-						receivingPacket.getLength());
-				DatagramPacket sendingPacket = new DatagramPacket(tempByte,
-						tempByte.length, ipAddressReturn, receivingPort);
-				rpcSocket.send(sendingPacket);
+				byte[] tempByte = responseBuilder(recPacket.getData());
+				DatagramPacket sendPacket = new DatagramPacket(tempByte,
+						tempByte.length, returnAddress, returnPort);
+				rpcSocket.send(sendPacket);
 			} catch (IOException e) {
-				e.printStackTrace();
-				System.out.println("rpcServer Run Method of Thread");
+				//e.printStackTrace();
+				System.out.println("rpcServer Run Method of Thread failed");
 			}
 		}
 	}

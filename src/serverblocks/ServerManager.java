@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import rpc.rpcClient;
+import session.Controller;
 
 public class ServerManager extends Thread {
 	public static final int checkRate = 10; // How often should we probe servers
@@ -42,17 +43,17 @@ public class ServerManager extends Thread {
 		}
 	}
 	
-	private void pingRandomServer(){
-		
+	private void pingRandomServer(){	
 		//Probe A Server To Check If It Is Alive
 		int y = x.nextInt(servers.size());
 		Server test = servers.get(y);
-		System.out.println("Ping a random server " + test.toString());
-		//Checking server 'test'
-		//If checker returns false then kill it
-		boolean flag = rpcClient.checker(test);
-		if (flag == false){
-			servers.remove(y);
+		if (! test.equals(Controller.localserver)) {
+			System.out.println("Ping a random server " + test.toString());
+			//Checking server 'test'
+			//If checker returns false then kill it
+			if (! rpcClient.checker(test)){
+				servers.remove(y);
+			}
 		}
 	}
 	
@@ -73,9 +74,9 @@ public class ServerManager extends Thread {
 	// returns true if the given server already exists in the given list of servers
 	public static boolean inServerList(Server s, List<Server> serverList) {
 		for (Server tmpServer : serverList) {
-			System.out.println("s:" + s.toString() + " tmpServer:" + tmpServer.toString());
 			if (tmpServer.equals(s)) {
-				System.out.println("Matched!");
+				//System.out.println("Matched!");
+				System.out.println("inServerList matched: s:" + s.toString() + " tmpServer:" + tmpServer.toString());
 				return true;
 			}
 		}
